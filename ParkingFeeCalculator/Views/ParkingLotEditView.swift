@@ -12,11 +12,11 @@ struct ParkingLotEditView: View {
 
     @State private var name: String = ""
     @State private var address: String = ""
-    @State private var hasBaseFee: Bool = true
-    @State private var baseFee: Int = 1000
-    @State private var baseMinutes: Int = 30
-    @State private var unitFee: Int = 500
-    @State private var unitMinutes: Int = 10
+    @State private var hasInitialFee: Bool = true
+    @State private var initialFee: Int = 1000
+    @State private var initialMinutes: Int = 30
+    @State private var additionalFee: Int = 500
+    @State private var additionalMinutes: Int = 10
     @State private var maxFee: Int = 10000
     @State private var freeMinutes: Int = 0
     @State private var dailyMaxFee: Int = 0
@@ -64,11 +64,11 @@ struct ParkingLotEditView: View {
         if let profile = parkingLotProfile {
             _name = State(initialValue: profile.name)
             _address = State(initialValue: profile.address)
-            _hasBaseFee = State(initialValue: profile.parkingFeeCalculator.baseFee > 0)
-            _baseFee = State(initialValue: profile.parkingFeeCalculator.baseFee)
-            _baseMinutes = State(initialValue: profile.parkingFeeCalculator.baseMinutes)
-            _unitFee = State(initialValue: profile.parkingFeeCalculator.unitFee)
-            _unitMinutes = State(initialValue: profile.parkingFeeCalculator.unitMinutes)
+                    _hasInitialFee = State(initialValue: profile.parkingFeeCalculator.initialFee > 0)
+        _initialFee = State(initialValue: profile.parkingFeeCalculator.initialFee)
+        _initialMinutes = State(initialValue: profile.parkingFeeCalculator.initialMinutes)
+        _additionalFee = State(initialValue: profile.parkingFeeCalculator.additionalFee)
+        _additionalMinutes = State(initialValue: profile.parkingFeeCalculator.additionalMinutes)
             _maxFee = State(initialValue: profile.parkingFeeCalculator.maxFee ?? 0)
             _freeMinutes = State(initialValue: profile.parkingFeeCalculator.freeMinutes)
             _dailyMaxFee = State(initialValue: profile.parkingFeeCalculator.dailyMaxFee ?? 0)
@@ -79,7 +79,7 @@ struct ParkingLotEditView: View {
             _nightStartHour = State(initialValue: profile.parkingFeeCalculator.nightStartHour ?? 22)
             _nightEndHour = State(initialValue: profile.parkingFeeCalculator.nightEndHour ?? 7)
             
-            // 할인 설정
+            // 기존 할인 시스템에서 데이터 로드
             let discounts = profile.specialConditionDiscounts
             _hasMildDiscount = State(initialValue: discounts.mildDiscountPercentage != nil)
             _mildDiscountPercentage = State(initialValue: discounts.mildDiscountPercentage ?? 0)
@@ -121,17 +121,17 @@ struct ParkingLotEditView: View {
                 }
 
                 Section("기본 요금") {
-                    Toggle("기본 요금 적용", isOn: $hasBaseFee)
+                    Toggle("기본 요금 적용", isOn: $hasInitialFee)
                     
-                    if hasBaseFee {
-                        Stepper(value: $baseFee, in: 0...100_000, step: 100) { row("기본요금", suffix: "원", value: baseFee) }
-                        Stepper(value: $baseMinutes, in: 0...180, step: 5) { row("기본시간", suffix: "분", value: baseMinutes) }
+                    if hasInitialFee {
+                        Stepper(value: $initialFee, in: 0...100_000, step: 100) { row("기본요금", suffix: "원", value: initialFee) }
+                        Stepper(value: $initialMinutes, in: 0...180, step: 5) { row("기본시간", suffix: "분", value: initialMinutes) }
                     }
                 }
                 
                 Section("추가 요금") {
-                    Stepper(value: $unitFee, in: 0...20_000, step: 100) { row("추가요금", suffix: "원", value: unitFee) }
-                    Stepper(value: $unitMinutes, in: 1...120, step: 1) { row("단위시간", suffix: "분", value: unitMinutes) }
+                    Stepper(value: $additionalFee, in: 0...20_000, step: 100) { row("추가요금", suffix: "원", value: additionalFee) }
+                    Stepper(value: $additionalMinutes, in: 1...120, step: 1) { row("단위시간", suffix: "분", value: additionalMinutes) }
                 }
                 
                 Section("할인 및 제한") {
@@ -337,10 +337,10 @@ struct ParkingLotEditView: View {
 
     private func save() {
         let parkingFeeCalculator = ParkingFeeCalculator(
-            baseFee: hasBaseFee ? baseFee : 0,
-            baseMinutes: hasBaseFee ? baseMinutes : 0,
-            unitFee: unitFee,
-            unitMinutes: unitMinutes,
+            initialFee: hasInitialFee ? initialFee : 0,
+            initialMinutes: hasInitialFee ? initialMinutes : 0,
+            additionalFee: additionalFee,
+            additionalMinutes: additionalMinutes,
             maxFee: maxFee == 0 ? nil : maxFee,
             freeMinutes: freeMinutes,
             dailyMaxFee: dailyMaxFee == 0 ? nil : dailyMaxFee,
@@ -365,12 +365,28 @@ struct ParkingLotEditView: View {
             hybridDiscountPercentage: hasHybridDiscount ? hybridDiscountPercentage : nil
         )
         
-        let updatedParkingLotProfile = ParkingLotProfile(
-            name: name.isEmpty ? "새 주차장" : name,
-            address: address.isEmpty ? "주소 미입력" : address,
-            parkingFeeCalculator: parkingFeeCalculator,
-            specialConditionDiscounts: specialConditionDiscounts
-        )
+        // 기존 주차장 정보가 있으면 기존 ID와 생성일을 유지하고, 없으면 새로운 정보로 생성
+        let updatedParkingLotProfile: ParkingLotProfile
+        if let existingProfile = parkingLotProfile {
+            // 기존 프로필의 ID와 생성일을 유지하면서 업데이트
+            updatedParkingLotProfile = ParkingLotProfile(
+                id: existingProfile.id,
+                name: name.isEmpty ? "새 주차장" : name,
+                address: address.isEmpty ? "주소 미입력" : address,
+                parkingFeeCalculator: parkingFeeCalculator,
+                specialConditionDiscounts: specialConditionDiscounts,
+                createdAt: existingProfile.createdAt,
+                updatedAt: Date()
+            )
+        } else {
+            // 새로운 주차장 생성
+            updatedParkingLotProfile = ParkingLotProfile(
+                name: name.isEmpty ? "새 주차장" : name,
+                address: address.isEmpty ? "주소 미입력" : address,
+                parkingFeeCalculator: parkingFeeCalculator,
+                specialConditionDiscounts: specialConditionDiscounts
+            )
+        }
 
         onSave(updatedParkingLotProfile)
         dismiss()

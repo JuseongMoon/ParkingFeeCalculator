@@ -30,13 +30,12 @@ struct ParkingLotInfoView: View {
                     // 주차장 기본 정보 섹션
                     infoSection(
                         title: "주차장 정보",
-                        icon: "building.2.fill",
+                        icon: "parkingsign.circle",
                         color: .blue
                     ) {
                         VStack(alignment: .leading, spacing: 12) {
                             infoRow(title: "주차장명", value: parkingLotProfile.displayName)
                             infoRow(title: "주소", value: parkingLotProfile.address)
-                            infoRow(title: "운영 상태", value: parkingLotProfile.isOpen ? "운영 중" : "운영 종료")
                         }
                     }
                     
@@ -47,9 +46,9 @@ struct ParkingLotInfoView: View {
                         color: .green
                     ) {
                         VStack(alignment: .leading, spacing: 12) {
-                            infoRow(title: "기본 요금", value: "\(parkingLotProfile.parkingFeeCalculator.baseFee)원/\(parkingLotProfile.parkingFeeCalculator.baseMinutes)분")
-                            if parkingLotProfile.parkingFeeCalculator.unitFee > 0 {
-                                infoRow(title: "추가 요금", value: "\(parkingLotProfile.parkingFeeCalculator.unitFee)원/\(parkingLotProfile.parkingFeeCalculator.unitMinutes)분")
+                                            infoRow(title: "기본 요금", value: "\(parkingLotProfile.parkingFeeCalculator.initialFee)원/\(parkingLotProfile.parkingFeeCalculator.initialMinutes)분")
+                if parkingLotProfile.parkingFeeCalculator.additionalFee > 0 {
+                    infoRow(title: "추가 요금", value: "\(parkingLotProfile.parkingFeeCalculator.additionalFee)원/\(parkingLotProfile.parkingFeeCalculator.additionalMinutes)분")
                             }
                             if let maxFee = parkingLotProfile.parkingFeeCalculator.maxFee {
                                 infoRow(title: "최대 요금", value: "\(maxFee)원")
@@ -82,23 +81,7 @@ struct ParkingLotInfoView: View {
                         }
                     }
                     
-                    // 차량별 요금 정보
-                    if !parkingLotProfile.parkingFeeCalculator.vehicleSizeMultipliers.isEmpty {
-                        infoSection(
-                            title: "차량별 요금",
-                            icon: "car.fill",
-                            color: .orange
-                        ) {
-                            VStack(alignment: .leading, spacing: 12) {
-                                ForEach(VehicleSize.allCases, id: \.self) { vehicleSize in
-                                    let multiplier = parkingLotProfile.parkingFeeCalculator.getVehicleMultiplier(for: vehicleSize)
-                                    if multiplier != 1.0 {
-                                        infoRow(title: vehicleSize.displayName, value: "\(Int(multiplier * 100))% 요금")
-                                    }
-                                }
-                            }
-                        }
-                    }
+
                     
                     // 할인 정책 정보
                     if parkingLotProfile.specialConditionDiscounts.hasAnyDiscount {
@@ -114,7 +97,7 @@ struct ParkingLotInfoView: View {
                     }
                     
                     // 주차 시작 버튼
-                    if parkingLotProfile.isOpen && !isParkingActive {
+                    if !isParkingActive {
                         VStack(spacing: 16) {
                             Button(action: {
                                 isStartingParking = true
@@ -225,10 +208,10 @@ struct ParkingLotInfoView: View {
         name: "테스트 주차장",
         address: "서울시 강남구 테헤란로 123",
         parkingFeeCalculator: ParkingFeeCalculator(
-            baseFee: 1000,
-            baseMinutes: 30,
-            unitFee: 500,
-            unitMinutes: 10,
+                            initialFee: 1000,
+                initialMinutes: 30,
+                additionalFee: 500,
+                additionalMinutes: 10,
             maxFee: 10000,
             freeMinutes: 10,
             dailyMaxFee: 20000,

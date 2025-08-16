@@ -8,12 +8,11 @@
 import Foundation
 
 struct ParkingLotProfile: Codable, Identifiable {
-    let id = UUID()
+    var id: UUID
     var name: String
     var address: String
     var parkingFeeCalculator: ParkingFeeCalculator
     var specialConditionDiscounts: SpecialConditionDiscounts
-    var isOpen: Bool
     var createdAt: Date
     var updatedAt: Date
 
@@ -22,15 +21,33 @@ struct ParkingLotProfile: Codable, Identifiable {
         address: String = "",
         parkingFeeCalculator: ParkingFeeCalculator = ParkingFeeCalculator(),
         specialConditionDiscounts: SpecialConditionDiscounts = SpecialConditionDiscounts(),
-        isOpen: Bool = true
     ) {
+        self.id = UUID()
         self.name = name
         self.address = address
         self.parkingFeeCalculator = parkingFeeCalculator
         self.specialConditionDiscounts = specialConditionDiscounts
-        self.isOpen = isOpen
         self.createdAt = Date()
         self.updatedAt = Date()
+    }
+    
+    // 기존 ID와 생성일을 유지하면서 업데이트하기 위한 초기화 메서드
+    init(
+        id: UUID,
+        name: String,
+        address: String,
+        parkingFeeCalculator: ParkingFeeCalculator,
+        specialConditionDiscounts: SpecialConditionDiscounts,
+        createdAt: Date,
+        updatedAt: Date
+    ) {
+        self.id = id
+        self.name = name
+        self.address = address
+        self.parkingFeeCalculator = parkingFeeCalculator
+        self.specialConditionDiscounts = specialConditionDiscounts
+        self.createdAt = createdAt
+        self.updatedAt = updatedAt
     }
 }
 

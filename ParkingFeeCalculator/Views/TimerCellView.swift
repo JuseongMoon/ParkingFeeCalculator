@@ -18,31 +18,22 @@ struct TimerCellView: View {
     // 실제 주차장 정보 (외부에서 주입받음)
     let parkingLotProfile: ParkingLotProfile?
     
+    // 사용자 프로필 정보
+    @EnvironmentObject var userProfileVM: UserProfileViewModel
+    
     init(isParkingActive: Binding<Bool>, parkingLotProfile: ParkingLotProfile? = nil) {
         self._isParkingActive = isParkingActive
         self.parkingLotProfile = parkingLotProfile
-    }
-    
-    // 기본 샘플 데이터 (parkingLotProfile이 nil일 때 사용)
-    private var sampleParkingLot: ParkingLotProfile {
-        ParkingLotProfile(
-            name: "샘플 주차장",
-            address: "서울시 강남구",
-            parkingFeeCalculator: ParkingFeeCalculator(
-                baseFee: 1000,
-                baseMinutes: 60,
-                unitFee: 500,
-                unitMinutes: 30,
-                maxFee: 10000
-            )
-        )
     }
     
     private var currentParkingLot: ParkingLotProfile? {
         return parkingLotProfile
     }
     
-    private let sampleVehicle = VehicleProfile(vehicleSize: .normal)
+    // 실제 사용자 차량 정보 사용
+    private var currentVehicle: VehicleProfile {
+        return userProfileVM.vehicleProfile
+    }
     
     var body: some View {
         VStack(spacing: 16) {
@@ -121,12 +112,19 @@ struct TimerCellView: View {
                                 
                                 // 주차비 계산 상세 정보
                                 VStack(alignment: .trailing, spacing: 2) {
-                                    Text("기본요금: \(parkingLot.parkingFeeCalculator.baseFee)원")
+                                    Text("기본요금: \(parkingLot.parkingFeeCalculator.initialFee)원")
                                         .font(.caption2)
                                         .foregroundColor(.secondary)
-                                    Text("추가요금: \(parkingLot.parkingFeeCalculator.unitFee)원/\(parkingLot.parkingFeeCalculator.unitMinutes)분")
+                                    Text("추가요금: \(parkingLot.parkingFeeCalculator.additionalFee)원/\(parkingLot.parkingFeeCalculator.additionalMinutes)분")
                                         .font(.caption2)
                                         .foregroundColor(.secondary)
+                                    
+                                    // 할인 정보 표시 (새로운 로직)
+                                    if let discountInfo = getDiscountInfo() {
+                                        Text(discountInfo)
+                                            .font(.caption2)
+                                            .foregroundColor(.green)
+                                    }
                                 }
                             }
                         }
@@ -139,7 +137,7 @@ struct TimerCellView: View {
                                     Text("기본 요금")
                                         .font(.caption)
                                         .foregroundColor(.secondary)
-                                    Text("\(parkingLot.parkingFeeCalculator.baseFee)원/\(parkingLot.parkingFeeCalculator.baseMinutes)분")
+                                    Text("\(parkingLot.parkingFeeCalculator.initialFee)원/\(parkingLot.parkingFeeCalculator.initialMinutes)분")
                                         .font(.subheadline)
                                         .fontWeight(.medium)
                                 }
@@ -150,7 +148,7 @@ struct TimerCellView: View {
                                     Text("추가 요금")
                                         .font(.caption)
                                         .foregroundColor(.secondary)
-                                    Text("\(parkingLot.parkingFeeCalculator.unitFee)원/\(parkingLot.parkingFeeCalculator.unitMinutes)분")
+                                    Text("\(parkingLot.parkingFeeCalculator.additionalFee)원/\(parkingLot.parkingFeeCalculator.additionalMinutes)분")
                                         .font(.subheadline)
                                         .fontWeight(.medium)
                                 }
@@ -184,6 +182,13 @@ struct TimerCellView: View {
                                             .font(.caption2)
                                             .foregroundColor(.secondary)
                                     }
+                                    
+                                    // 할인 정보 표시 (새로운 로직)
+                                    if let discountInfo = getDiscountInfo() {
+                                        Text(discountInfo)
+                                            .font(.caption2)
+                                            .foregroundColor(.green)
+                                    }
                                 }
                             }
                         }
@@ -205,6 +210,8 @@ struct TimerCellView: View {
                                 .background(Color.red)
                                 .cornerRadius(12)
                             }
+                            .buttonStyle(.plain)
+                            .allowsHitTesting(true)
                         }
                         .padding(.horizontal, 16)
                         .padding(.bottom, 16)
@@ -221,7 +228,7 @@ struct TimerCellView: View {
                     }
                 }
             } else {
-                // 주차장이 선택되지 않은 경우 - 깔끔한 안내 메시지만 표시
+                // 주차장이 선택되지 않은 경우 - 안내 메시지 표시
                 VStack(spacing: 20) {
                     Image(systemName: "building.2")
                         .font(.system(size: 50))
@@ -232,7 +239,7 @@ struct TimerCellView: View {
                             .font(.headline)
                             .foregroundColor(.secondary)
                         
-                        Text("아래 주차장 목록에서 주차장을 선택하고\n주차 시작 버튼을 눌러주세요")
+                        Text("주차장 목록에서 주차장을 선택하거나\n새로운 주차장을 추가해주세요")
                             .font(.caption)
                             .foregroundColor(.secondary)
                             .multilineTextAlignment(.center)
@@ -307,41 +314,42 @@ struct TimerCellView: View {
         timer = nil
     }
     
+    // MARK: - 새로운 통합 계산 로직
     private func calculateCurrentFee() {
         guard let parkingLot = currentParkingLot else { return }
         
         let elapsed = currentTime.timeIntervalSince(parkingStartTime)
-        let elapsedMinutes = elapsed / 60.0
         
-        let calculator = parkingLot.parkingFeeCalculator
+        // 새로운 통합 계산 메서드 사용
+        let result = parkingLot.parkingFeeCalculator.calculateFee(
+            duration: elapsed,
+            vehicleProfile: currentVehicle,
+            driverProfile: userProfileVM.driverProfile,
+            specialConditionDiscounts: parkingLot.specialConditionDiscounts,
+            startTime: parkingStartTime
+        )
         
-        // 무료 시간 적용
-        if elapsedMinutes <= Double(calculator.freeMinutes) {
-            currentFee = 0
-            return
-        }
+        currentFee = result.finalFee
+    }
+    
+    private func getDiscountInfo() -> String? {
+        guard let parkingLot = currentParkingLot else { return nil }
         
-        // 기본 요금 계산
-        var fee = calculator.baseFee
+        // 1분 주차로 할인 정보 미리 계산
+        let result = parkingLot.parkingFeeCalculator.calculateFee(
+            duration: 60, // 1분
+            vehicleProfile: currentVehicle,
+            driverProfile: userProfileVM.driverProfile,
+            specialConditionDiscounts: parkingLot.specialConditionDiscounts
+        )
         
-        // 추가 요금 계산
-        if elapsedMinutes > Double(calculator.baseMinutes) {
-            let additionalMinutes = elapsedMinutes - Double(calculator.baseMinutes)
-            let additionalUnits = Int(ceil(additionalMinutes / Double(calculator.unitMinutes)))
-            fee += additionalUnits * calculator.unitFee
-        }
-        
-        // 최대 요금 적용
-        if let maxFee = calculator.maxFee {
-            fee = min(fee, maxFee)
-        }
-        
-        currentFee = fee
+        return result.discountInfo
     }
 }
 
 #Preview {
     TimerCellView(isParkingActive: .constant(false))
+        .environmentObject(UserProfileViewModel())
         .padding()
         .background(Color(.systemGroupedBackground))
 }

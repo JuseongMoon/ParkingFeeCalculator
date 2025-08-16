@@ -18,12 +18,14 @@ struct ParkingLotListView: View {
             Group {
                 if viewModel.parkingLots.isEmpty {
                     List {
-                        // 타이머 셀 (항상 표시)
+                        // 타이머 셀 (항상 표시) - NavigationLink로 감싸지 않음
                         Section {
                             TimerCellView(
                                 isParkingActive: $isParkingActive,
                                 parkingLotProfile: currentParkingLot
                             )
+                            .listRowInsets(EdgeInsets())
+                            .listRowBackground(Color.clear)
                         }
                         
                         // 빈 상태 메시지
@@ -39,12 +41,14 @@ struct ParkingLotListView: View {
                     .listStyle(.insetGrouped)
                 } else {
                     List {
-                        // 타이머 셀 (항상 표시)
+                        // 타이머 셀 (항상 표시) - NavigationLink로 감싸지 않음
                         Section {
                             TimerCellView(
                                 isParkingActive: $isParkingActive,
                                 parkingLotProfile: currentParkingLot
                             )
+                            .listRowInsets(EdgeInsets())
+                            .listRowBackground(Color.clear)
                         }
                         
                         // 주차장 리스트
@@ -71,7 +75,7 @@ struct ParkingLotListView: View {
                                         VStack(alignment: .leading, spacing: 4) {
                                             Text(parkingLot.displayName)
                                                 .font(.headline)
-                                            Text("\(parkingLot.parkingFeeCalculator.unitFee)원/\(parkingLot.parkingFeeCalculator.unitMinutes)분")
+                                            Text("\(parkingLot.parkingFeeCalculator.additionalFee)원/\(parkingLot.parkingFeeCalculator.additionalMinutes)분")
                                                 .font(.subheadline)
                                                 .foregroundStyle(.secondary)
                                         }
