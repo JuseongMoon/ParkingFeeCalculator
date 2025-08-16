@@ -162,7 +162,7 @@ struct TimerCellView: View {
                                     Text("예상 주차비")
                                         .font(.caption)
                                         .foregroundColor(.secondary)
-                                    Text("시작 후 계산")
+                                    Text("주차 시작 후 실시간 계산")
                                         .font(.title2)
                                         .fontWeight(.bold)
                                         .foregroundColor(.secondary)
@@ -216,9 +216,15 @@ struct TimerCellView: View {
                         .padding(.horizontal, 16)
                         .padding(.bottom, 16)
                     } else {
-                        // 주차 시작 전 안내 메시지
-                        VStack(spacing: 8) {
-                            Text("주차장 정보에서 주차 시작 버튼을 눌러주세요")
+                        // 주차 시작 전 안내 메시지 (개선된 가이드 텍스트)
+                        VStack(spacing: 6) {
+                            Text("아직 주차를 시작하지 않았어요")
+                                .font(.footnote)
+                                .fontWeight(.semibold)
+                                .foregroundColor(.secondary)
+                                .multilineTextAlignment(.center)
+
+                            Text("주차장 상세 화면에서 ‘주차 시작’을 누르면\n타이머와 실시간 요금이 표시됩니다.")
                                 .font(.caption)
                                 .foregroundColor(.secondary)
                                 .multilineTextAlignment(.center)
@@ -353,4 +359,3 @@ struct TimerCellView: View {
         .padding()
         .background(Color(.systemGroupedBackground))
 }
-

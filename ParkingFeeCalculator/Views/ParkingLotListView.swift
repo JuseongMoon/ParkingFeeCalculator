@@ -24,6 +24,7 @@ struct ParkingLotListView: View {
                                 isParkingActive: $isParkingActive,
                                 parkingLotProfile: currentParkingLot
                             )
+                            .padding(.top, 20)
                             .listRowInsets(EdgeInsets())
                             .listRowBackground(Color.clear)
                         }
@@ -47,6 +48,7 @@ struct ParkingLotListView: View {
                                 isParkingActive: $isParkingActive,
                                 parkingLotProfile: currentParkingLot
                             )
+                            .padding(.top, 20)
                             .listRowInsets(EdgeInsets())
                             .listRowBackground(Color.clear)
                         }
