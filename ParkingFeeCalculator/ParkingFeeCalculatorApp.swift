@@ -9,9 +9,12 @@ import SwiftUI
 
 @main
 struct ParkingFeeCalculatorApp: App {
+    @StateObject private var userProfileVM = UserProfileViewModel()
+    
     var body: some Scene {
         WindowGroup {
             MainTabView()
+                .environmentObject(userProfileVM)
         }
     }
 }

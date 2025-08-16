@@ -2,32 +2,106 @@
 //  ParkingSession.swift
 //  ParkingFeeCalculator
 //
-//  Created by GPT-5 on 8/13/25.
+//  Created by 문주성 on 8/16/25.
 //
 
 import Foundation
 
-struct ParkingTariff: Identifiable, Codable, Hashable {
-    var id: UUID = UUID()
-    var baseFee: Int
-    var baseMinutes: Int
-    var unitFee: Int
-    var unitMinutes: Int
-    var maxFee: Int?
-    // 추가 항목: 한국 주차장 요금 사례 반영
-    var freeMinutes: Int = 0
-    var dailyMaxFee: Int? = nil
-    var nightFlatFee: Int? = nil
-    // 24시간 기준 시각(0~23)
-    var nightStartHour: Int? = nil
-    var nightEndHour: Int? = nil
-}
-
-struct ParkingSession: Identifiable, Codable, Hashable {
-    var id: UUID = UUID()
+struct ParkingSession: Identifiable, Codable, Equatable, Hashable {
+    let id = UUID()
     var name: String
     var startedAt: Date
-    var tariff: ParkingTariff
+    var endedAt: Date?
+    var parkingLotProfile: ParkingLotProfile
+    var driverProfile: DriverProfile
+    var vehicleProfile: VehicleProfile
+    var totalFee: Int
+    var isActive: Bool
+    var notes: String?
+    var createdAt: Date
+    var updatedAt: Date
+    
+    init(
+        name: String = "",
+        startedAt: Date = Date(),
+        endedAt: Date? = nil,
+        parkingLotProfile: ParkingLotProfile,
+        driverProfile: DriverProfile,
+        vehicleProfile: VehicleProfile,
+        totalFee: Int = 0,
+        isActive: Bool = true,
+        notes: String? = nil
+    ) {
+        self.name = name
+        self.startedAt = startedAt
+        self.endedAt = endedAt
+        self.parkingLotProfile = parkingLotProfile
+        self.driverProfile = driverProfile
+        self.vehicleProfile = vehicleProfile
+        self.totalFee = totalFee
+        self.isActive = isActive
+        self.notes = notes
+        self.createdAt = Date()
+        self.updatedAt = Date()
+    }
+    
+    // MARK: - Equatable
+    static func == (lhs: ParkingSession, rhs: ParkingSession) -> Bool {
+        return lhs.id == rhs.id
+    }
+    
+    // MARK: - Hashable
+    func hash(into hasher: inout Hasher) {
+        hasher.combine(id)
+    }
 }
 
-
+// MARK: - ParkingSession Extensions
+extension ParkingSession {
+    var duration: TimeInterval {
+        let endTime = endedAt ?? Date()
+        return endTime.timeIntervalSince(startedAt)
+    }
+    
+    var durationHours: Double {
+        return duration / 3600.0
+    }
+    
+    var durationMinutes: Int {
+        return Int(duration / 60.0)
+    }
+    
+    var formattedDuration: String {
+        let hours = Int(durationHours)
+        let minutes = durationMinutes % 60
+        
+        if hours > 0 {
+            return "\(hours)시간 \(minutes)분"
+        } else {
+            return "\(minutes)분"
+        }
+    }
+    
+    var displayName: String {
+        return name.isEmpty ? "주차 세션" : name
+    }
+    
+    var isCompleted: Bool {
+        return endedAt != nil && !isActive
+    }
+    
+    var tariff: ParkingFeeCalculator {
+        return parkingLotProfile.parkingFeeCalculator
+    }
+    
+    mutating func endSession() {
+        self.endedAt = Date()
+        self.isActive = false
+        self.updatedAt = Date()
+    }
+    
+    mutating func updateFee(_ newFee: Int) {
+        self.totalFee = newFee
+        self.updatedAt = Date()
+    }
+}
