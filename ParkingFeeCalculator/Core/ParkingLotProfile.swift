@@ -2,7 +2,7 @@
 //  ParkingLotProfile.swift
 //  ParkingFeeCalculator
 //
-//  Created by GPT-5 on 8/13/25.
+//  Created by 문주성 on 8/13/25.
 //
 
 import Foundation
@@ -74,10 +74,10 @@ struct SpecialConditionDiscounts: Codable {
     // 차량 관련 할인
     var lightCarDiscountPercentage: Double?
     var normalCarDiscountPercentage: Double?
-    var mediumCarDiscountPercentage: Double?
     var largeCarDiscountPercentage: Double?
-    var lowEmissionDiscountPercentage: Double?
-    var electricHydrogenDiscountPercentage: Double?
+
+    var electricDiscountPercentage: Double?
+    var hydrogenDiscountPercentage: Double?
     var hybridDiscountPercentage: Double?
     
     init(
@@ -89,10 +89,10 @@ struct SpecialConditionDiscounts: Codable {
         seniorDiscountPercentage: Double? = nil,
         lightCarDiscountPercentage: Double? = nil,
         normalCarDiscountPercentage: Double? = nil,
-        mediumCarDiscountPercentage: Double? = nil,
         largeCarDiscountPercentage: Double? = nil,
-        lowEmissionDiscountPercentage: Double? = nil,
-        electricHydrogenDiscountPercentage: Double? = nil,
+
+        electricDiscountPercentage: Double? = nil,
+        hydrogenDiscountPercentage: Double? = nil,
         hybridDiscountPercentage: Double? = nil
     ) {
         self.mildDiscountPercentage = mildDiscountPercentage
@@ -103,10 +103,10 @@ struct SpecialConditionDiscounts: Codable {
         self.seniorDiscountPercentage = seniorDiscountPercentage
         self.lightCarDiscountPercentage = lightCarDiscountPercentage
         self.normalCarDiscountPercentage = normalCarDiscountPercentage
-        self.mediumCarDiscountPercentage = mediumCarDiscountPercentage
         self.largeCarDiscountPercentage = largeCarDiscountPercentage
-        self.lowEmissionDiscountPercentage = lowEmissionDiscountPercentage
-        self.electricHydrogenDiscountPercentage = electricHydrogenDiscountPercentage
+
+        self.electricDiscountPercentage = electricDiscountPercentage
+        self.hydrogenDiscountPercentage = hydrogenDiscountPercentage
         self.hybridDiscountPercentage = hybridDiscountPercentage
     }
     
@@ -128,14 +128,13 @@ struct SpecialConditionDiscounts: Codable {
             return lightCarDiscountPercentage
         case .normalCar:
             return normalCarDiscountPercentage
-        case .mediumCar:
-            return mediumCarDiscountPercentage
         case .largeCar:
             return largeCarDiscountPercentage
-        case .lowEmission:
-            return lowEmissionDiscountPercentage
-        case .electricHydrogen:
-            return electricHydrogenDiscountPercentage
+
+        case .electric:
+            return electricDiscountPercentage
+        case .hydrogen:
+            return hydrogenDiscountPercentage
         case .hybrid:
             return hybridDiscountPercentage
         }
@@ -150,10 +149,10 @@ struct SpecialConditionDiscounts: Codable {
                seniorDiscountPercentage != nil ||
                lightCarDiscountPercentage != nil ||
                normalCarDiscountPercentage != nil ||
-               mediumCarDiscountPercentage != nil ||
                largeCarDiscountPercentage != nil ||
-               lowEmissionDiscountPercentage != nil ||
-               electricHydrogenDiscountPercentage != nil ||
+
+               electricDiscountPercentage != nil ||
+               hydrogenDiscountPercentage != nil ||
                hybridDiscountPercentage != nil
     }
     
@@ -192,20 +191,18 @@ struct SpecialConditionDiscounts: Codable {
             descriptions.append("일반차 \(Int(normalCar))%")
         }
         
-        if let mediumCar = mediumCarDiscountPercentage {
-            descriptions.append("중형차 \(Int(mediumCar))%")
-        }
-        
         if let largeCar = largeCarDiscountPercentage {
             descriptions.append("대형차 \(Int(largeCar))%")
         }
         
-        if let lowEmission = lowEmissionDiscountPercentage {
-            descriptions.append("저공해인증 \(Int(lowEmission))%")
+
+        
+        if let electric = electricDiscountPercentage {
+            descriptions.append("전기차 \(Int(electric))%")
         }
         
-        if let electricHydrogen = electricHydrogenDiscountPercentage {
-            descriptions.append("전기/수소 \(Int(electricHydrogen))%")
+        if let hydrogen = hydrogenDiscountPercentage {
+            descriptions.append("수소차 \(Int(hydrogen))%")
         }
         
         if let hybrid = hybridDiscountPercentage {
@@ -229,10 +226,10 @@ enum SpecialCondition: Codable {
     case senior
     case lightCar
     case normalCar
-    case mediumCar
     case largeCar
-    case lowEmission
-    case electricHydrogen
+
+    case electric
+    case hydrogen
     case hybrid
     
     var displayName: String {
@@ -253,14 +250,13 @@ enum SpecialCondition: Codable {
             return "경차"
         case .normalCar:
             return "일반차"
-        case .mediumCar:
-            return "중형차"
         case .largeCar:
             return "대형차"
-        case .lowEmission:
-            return "저공해 인증"
-        case .electricHydrogen:
-            return "전기/수소"
+
+        case .electric:
+            return "전기차"
+        case .hydrogen:
+            return "수소차"
         case .hybrid:
             return "하이브리드"
         }

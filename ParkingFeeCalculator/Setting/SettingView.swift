@@ -2,13 +2,14 @@
 //  SettingView.swift
 //  ParkingFeeCalculator
 //
-//  Created by GPT-5 on 8/13/25.
+//  Created by 문주성 on 8/13/25.
 //
 
 import SwiftUI
 
 struct SettingView: View {
     @AppStorage("appColorScheme") private var appColorScheme: String = "system"
+    @StateObject private var settingViewModel = SettingViewModel()
     @State private var showingUserProfile = false
     
     var body: some View {
@@ -50,6 +51,33 @@ struct SettingView: View {
                     .pickerStyle(.segmented)
                 }
                 
+                Section("알림 설정") {
+                    HStack {
+                        Image(systemName: "bell.fill")
+                            .foregroundColor(.orange)
+                            .font(.title3)
+                        
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text("주차비 알림")
+                                .font(.headline)
+                            Text("설정된 금액 이상일 때 알림")
+                                .font(.caption)
+                                .foregroundColor(.secondary)
+                        }
+                        
+                        Spacer()
+                        
+                        Toggle("", isOn: $settingViewModel.isParkingFeeAlertEnabled)
+                            .labelsHidden()
+                    }
+                    
+                    if settingViewModel.isParkingFeeAlertEnabled {
+                        Stepper(value: $settingViewModel.parkingFeeAlertThreshold, in: 1000...1_000_000, step: 1000) {
+                            row("알림 기준 금액", suffix: "원", value: settingViewModel.parkingFeeAlertThreshold)
+                        }
+                    }
+                }
+                
                 Section("앱 정보") {
                     HStack {
                         Text("버전")
@@ -72,6 +100,16 @@ struct SettingView: View {
             .sheet(isPresented: $showingUserProfile) {
                 UserProfileView()
             }
+        }
+    }
+    
+    private func row(_ title: String, suffix: String, value: Int) -> some View {
+        HStack {
+            Text(title)
+            Spacer()
+            Text("\(value)\(suffix)")
+                .monospacedDigit()
+                .foregroundStyle(.secondary)
         }
     }
 }

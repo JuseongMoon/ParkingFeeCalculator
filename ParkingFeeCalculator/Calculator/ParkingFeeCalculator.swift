@@ -23,12 +23,12 @@ struct ParkingFeeCalculator: Codable, Identifiable {
     var updatedAt: Date
     
     init(
-        initialFee: Int = 1000,
-        initialMinutes: Int = 60,
-        additionalFee: Int = 500,
-        additionalMinutes: Int = 30,
+        initialFee: Int = ParkingLotDefaults.initialFee,
+        initialMinutes: Int = ParkingLotDefaults.initialMinutes,
+        additionalFee: Int = ParkingLotDefaults.additionalFee,
+        additionalMinutes: Int = ParkingLotDefaults.additionalMinutes,
         maxFee: Int? = nil,
-        freeMinutes: Int = 0,
+        freeMinutes: Int = ParkingLotDefaults.freeMinutes,
         dailyMaxFee: Int? = nil,
         nightFlatFee: Int? = nil,
         nightStartHour: Int? = nil,
@@ -67,9 +67,7 @@ extension ParkingFeeCalculator {
         return maxFee != nil
     }
     
-    func getVehicleMultiplier(for vehicleSize: VehicleSize) -> Double {
-        return vehicleSize.defaultRateMultiplier
-    }
+
     
     func isNightTime() -> Bool {
         guard let startHour = nightStartHour, let endHour = nightEndHour else { return false }
@@ -106,9 +104,7 @@ extension ParkingFeeCalculator {
         // 기본 주차비 계산
         let baseFee = calculateBaseFee(duration: duration)
         
-        // 차량 크기 배수 적용
-        let vehicleMultiplier = getVehicleMultiplier(for: vehicleProfile.vehicleSize)
-        var totalFee = Int(Double(baseFee) * vehicleMultiplier)
+        var totalFee = baseFee
         
         // 최대 요금 제한 (할인 적용 전)
         if let maxFee = self.maxFee {
@@ -130,7 +126,9 @@ extension ParkingFeeCalculator {
         var appliedDiscount: DiscountInfo?
         
         if let discount = bestDiscount {
-            finalFee = Int(Double(totalFee) * (1.0 - discount.percentage / 100.0))
+            // 부동소수점 정밀도 문제를 해결하기 위해 반올림 사용
+            let discountedAmount = Double(totalFee) * (1.0 - discount.percentage / 100.0)
+            finalFee = Int(round(discountedAmount))
             appliedDiscount = discount
         }
         
@@ -141,7 +139,6 @@ extension ParkingFeeCalculator {
         
         return ParkingFeeResult(
             baseFee: baseFee,
-            vehicleMultiplier: vehicleMultiplier,
             totalFeeBeforeDiscount: totalFee,
             appliedDiscount: appliedDiscount,
             finalFee: finalFee,
@@ -163,7 +160,7 @@ extension ParkingFeeCalculator {
         
         // 기본 시간 이후 계산
         let chargeableDuration = duration - TimeInterval(freeMinutes * 60)
-        let chargeableMinutes = Int(chargeableDuration / 60)
+        let chargeableMinutes = Int(ceil(chargeableDuration / 60))
         
         if chargeableMinutes <= initialMinutes {
             return initialFee
@@ -260,15 +257,7 @@ extension ParkingFeeCalculator {
         case .normal:
             if let discountPercentage = specialConditionDiscounts.normalCarDiscountPercentage {
                 applicableDiscounts.append(DiscountInfo(
-                    name: "일반차",
-                    percentage: discountPercentage,
-                    type: .vehicle
-                ))
-            }
-        case .medium:
-            if let discountPercentage = specialConditionDiscounts.mediumCarDiscountPercentage {
-                applicableDiscounts.append(DiscountInfo(
-                    name: "중형차",
+                    name: "일반",
                     percentage: discountPercentage,
                     type: .vehicle
                 ))
@@ -276,7 +265,7 @@ extension ParkingFeeCalculator {
         case .large:
             if let discountPercentage = specialConditionDiscounts.largeCarDiscountPercentage {
                 applicableDiscounts.append(DiscountInfo(
-                    name: "대형차",
+                    name: "대형",
                     percentage: discountPercentage,
                     type: .vehicle
                 ))
@@ -284,20 +273,20 @@ extension ParkingFeeCalculator {
         }
         
         // 친환경 차량 할인 확인
-        if vehicleProfile.isLowEmission {
-            if let discountPercentage = specialConditionDiscounts.lowEmissionDiscountPercentage {
+        if vehicleProfile.isElectric {
+            if let discountPercentage = specialConditionDiscounts.electricDiscountPercentage {
                 applicableDiscounts.append(DiscountInfo(
-                    name: "저공해 인증",
+                    name: "전기차",
                     percentage: discountPercentage,
                     type: .environmental
                 ))
             }
         }
         
-        if vehicleProfile.isElectricHydrogen {
-            if let discountPercentage = specialConditionDiscounts.electricHydrogenDiscountPercentage {
+        if vehicleProfile.isHydrogen {
+            if let discountPercentage = specialConditionDiscounts.hydrogenDiscountPercentage {
                 applicableDiscounts.append(DiscountInfo(
-                    name: "전기/수소",
+                    name: "수소차",
                     percentage: discountPercentage,
                     type: .environmental
                 ))
@@ -330,7 +319,6 @@ extension ParkingFeeCalculator {
 // MARK: - 결과 타입들
 struct ParkingFeeResult {
     let baseFee: Int
-    let vehicleMultiplier: Double
     let totalFeeBeforeDiscount: Int
     let appliedDiscount: DiscountInfo?
     let finalFee: Int

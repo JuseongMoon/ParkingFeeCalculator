@@ -2,7 +2,7 @@
 //  ParkingLotListView.swift
 //  ParkingFeeCalculator
 //
-//  Created by GPT-5 on 8/13/25.
+//  Created by 문주성 on 8/13/25.
 //
 
 import SwiftUI
@@ -12,6 +12,9 @@ struct ParkingLotListView: View {
     @State private var isPresentingForm: Bool = false
     @State private var isParkingActive: Bool = false
     @State private var currentParkingLot: ParkingLotProfile?
+    
+    // MARK: - 테스트용 변수 (출시 시 제거 예정)
+    @State private var testTimeOffset: TimeInterval = 0
 
     var body: some View {
         NavigationStack {
@@ -22,7 +25,8 @@ struct ParkingLotListView: View {
                         Section {
                             TimerCellView(
                                 isParkingActive: $isParkingActive,
-                                parkingLotProfile: currentParkingLot
+                                parkingLotProfile: currentParkingLot,
+                                testTimeOffset: testTimeOffset // 테스트용 시간 오프셋 전달
                             )
                             .padding(.top, 20)
                             .listRowInsets(EdgeInsets())
@@ -46,7 +50,8 @@ struct ParkingLotListView: View {
                         Section {
                             TimerCellView(
                                 isParkingActive: $isParkingActive,
-                                parkingLotProfile: currentParkingLot
+                                parkingLotProfile: currentParkingLot,
+                                testTimeOffset: testTimeOffset // 테스트용 시간 오프셋 전달
                             )
                             .padding(.top, 20)
                             .listRowInsets(EdgeInsets())
@@ -116,6 +121,64 @@ struct ParkingLotListView: View {
                     currentParkingLot = nil
                 }
             }
+            // MARK: - 테스트용 플로팅 버튼 (출시 시 제거 예정)
+            .overlay(
+                Group {
+                    if isParkingActive {
+                        VStack {
+                            Spacer()
+                            HStack {
+                                Spacer()
+                                VStack(spacing: 8) {
+                                    // 시간 추가 버튼
+                                    Button(action: {
+                                        testTimeOffset += 60 // 1분 추가
+                                    }) {
+                                        Image(systemName: "plus.circle.fill")
+                                            .font(.title2)
+                                            .foregroundColor(.white)
+                                            .frame(width: 44, height: 44)
+                                            .background(Color.blue)
+                                            .clipShape(Circle())
+                                            .shadow(color: .black.opacity(0.3), radius: 4, x: 0, y: 2)
+                                    }
+                                    .accessibilityLabel("테스트용 시간 1분 추가")
+                                    
+                                    // 시간 감소 버튼
+                                    Button(action: {
+                                        testTimeOffset -= 60 // 1분 감소
+                                    }) {
+                                        Image(systemName: "minus.circle.fill")
+                                            .font(.title2)
+                                            .foregroundColor(.white)
+                                            .frame(width: 44, height: 44)
+                                            .background(Color.red)
+                                            .clipShape(Circle())
+                                            .shadow(color: .black.opacity(0.3), radius: 4, x: 0, y: 2)
+                                    }
+                                    .accessibilityLabel("테스트용 시간 1분 감소")
+                                    
+                                    // 시간 리셋 버튼
+                                    Button(action: {
+                                        testTimeOffset = 0 // 시간 오프셋 리셋
+                                    }) {
+                                        Image(systemName: "arrow.clockwise.circle.fill")
+                                            .font(.title2)
+                                            .foregroundColor(.white)
+                                            .frame(width: 44, height: 44)
+                                            .background(Color.orange)
+                                            .clipShape(Circle())
+                                            .shadow(color: .black.opacity(0.3), radius: 4, x: 0, y: 2)
+                                    }
+                                    .accessibilityLabel("테스트용 시간 리셋")
+                                }
+                                .padding(.trailing, 20)
+                                .padding(.bottom, 100) // 탭바 위에 위치하도록 조정
+                            }
+                        }
+                    }
+                }
+            )
         }
     }
 }

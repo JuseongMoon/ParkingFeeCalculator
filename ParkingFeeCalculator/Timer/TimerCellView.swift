@@ -12,18 +12,23 @@ struct TimerCellView: View {
     @State private var parkingStartTime = Date()
     @State private var currentTime = Date()
     @State private var currentFee = 0
-    @State private var timer: Timer?
+    @State private var displayTimer: Timer? // 경과 시간 표시용 타이머 (1초마다)
+    @State private var feeCalculationTimer: Timer? // 주차비 계산용 타이머 (1분마다)
     @State private var showingStopConfirmation = false
     
     // 실제 주차장 정보 (외부에서 주입받음)
     let parkingLotProfile: ParkingLotProfile?
     
+    // MARK: - 테스트용 변수 (출시 시 제거 예정)
+    let testTimeOffset: TimeInterval
+    
     // 사용자 프로필 정보
     @EnvironmentObject var userProfileVM: UserProfileViewModel
     
-    init(isParkingActive: Binding<Bool>, parkingLotProfile: ParkingLotProfile? = nil) {
+    init(isParkingActive: Binding<Bool>, parkingLotProfile: ParkingLotProfile? = nil, testTimeOffset: TimeInterval = 0) {
         self._isParkingActive = isParkingActive
         self.parkingLotProfile = parkingLotProfile
+        self.testTimeOffset = testTimeOffset
     }
     
     private var currentParkingLot: ParkingLotProfile? {
@@ -76,7 +81,7 @@ struct TimerCellView: View {
                                     Text("시작 시간")
                                         .font(.caption)
                                         .foregroundColor(.secondary)
-                                    Text(parkingStartTime, style: .time)
+                                    Text(formatKoreanDateTime(parkingStartTime))
                                         .font(.subheadline)
                                         .fontWeight(.medium)
                                 }
@@ -120,10 +125,9 @@ struct TimerCellView: View {
                                         .foregroundColor(.secondary)
                                     
                                     // 할인 정보 표시 (새로운 로직)
-                                    if let discountInfo = getDiscountInfo() {
+                                    if let discountInfo = getDiscountInfoWithHighlighting() {
                                         Text(discountInfo)
                                             .font(.caption2)
-                                            .foregroundColor(.green)
                                     }
                                 }
                             }
@@ -184,10 +188,9 @@ struct TimerCellView: View {
                                     }
                                     
                                     // 할인 정보 표시 (새로운 로직)
-                                    if let discountInfo = getDiscountInfo() {
+                                    if let discountInfo = getDiscountInfoWithHighlighting() {
                                         Text(discountInfo)
                                             .font(.caption2)
-                                            .foregroundColor(.green)
                                     }
                                 }
                             }
@@ -255,9 +258,8 @@ struct TimerCellView: View {
                 .frame(maxWidth: .infinity)
             }
         }
-        .background(Color(.systemBackground))
+        .background(Color(.secondarySystemGroupedBackground))
         .cornerRadius(16)
-        .shadow(color: .black.opacity(0.1), radius: 8, x: 0, y: 2)
         .onAppear {
             startTimer()
         }
@@ -267,6 +269,20 @@ struct TimerCellView: View {
         .onChange(of: isParkingActive) { newValue in
             if newValue {
                 startParking()
+            }
+        }
+        // MARK: - 테스트용 시간 오프셋 변경 감지 (출시 시 제거 예정)
+        .onChange(of: testTimeOffset) { newValue in
+            if isParkingActive {
+                // 테스트용 시간 오프셋이 변경되면 즉시 주차비 재계산
+                calculateCurrentFee()
+                
+                // 리셋(0으로 설정) 시에도 강제로 계산
+                if newValue == 0 {
+                    DispatchQueue.main.async {
+                        calculateCurrentFee()
+                    }
+                }
             }
         }
         .alert("주차 종료", isPresented: $showingStopConfirmation) {
@@ -281,7 +297,7 @@ struct TimerCellView: View {
     
     // MARK: - Computed Properties
     private var elapsedTimeString: String {
-        let elapsed = currentTime.timeIntervalSince(parkingStartTime)
+        let elapsed = currentTime.timeIntervalSince(parkingStartTime) + testTimeOffset
         let hours = Int(elapsed) / 3600
         let minutes = (Int(elapsed) % 3600) / 60
         let seconds = Int(elapsed) % 60
@@ -293,10 +309,19 @@ struct TimerCellView: View {
         }
     }
     
+    // MARK: - Helper Methods
+    private func formatKoreanDateTime(_ date: Date) -> String {
+        let formatter = DateFormatter()
+        formatter.locale = Locale(identifier: "ko_KR")
+        formatter.dateFormat = "yyyy년 MM월 dd일 a h:mm"
+        return formatter.string(from: date)
+    }
+    
     // MARK: - Actions
     private func startParking() {
         parkingStartTime = Date()
         currentTime = Date()
+        // 주차 시작 시 즉시 기본요금 계산
         calculateCurrentFee()
     }
     
@@ -307,24 +332,39 @@ struct TimerCellView: View {
     }
     
     private func startTimer() {
-        timer = Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { _ in
+        // 경과 시간 표시용 타이머 (1초마다)
+        displayTimer = Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { _ in
             currentTime = Date()
+        }
+        
+        // 주차비 계산용 타이머 (1분마다)
+        feeCalculationTimer = Timer.scheduledTimer(withTimeInterval: 60.0, repeats: true) { _ in
             if isParkingActive {
+                calculateCurrentFee()
+            }
+        }
+        
+        // 주차 시작 시 즉시 첫 번째 계산 실행 (1분 대기 없이)
+        if isParkingActive {
+            DispatchQueue.main.async {
                 calculateCurrentFee()
             }
         }
     }
     
     private func stopTimer() {
-        timer?.invalidate()
-        timer = nil
+        displayTimer?.invalidate()
+        displayTimer = nil
+        feeCalculationTimer?.invalidate()
+        feeCalculationTimer = nil
     }
     
     // MARK: - 새로운 통합 계산 로직
     private func calculateCurrentFee() {
         guard let parkingLot = currentParkingLot else { return }
         
-        let elapsed = currentTime.timeIntervalSince(parkingStartTime)
+        // 시간 계산 로직 수정: testTimeOffset 중복 적용 제거
+        let elapsed = currentTime.timeIntervalSince(parkingStartTime) + testTimeOffset
         
         // 새로운 통합 계산 메서드 사용
         let result = parkingLot.parkingFeeCalculator.calculateFee(
@@ -341,21 +381,71 @@ struct TimerCellView: View {
     private func getDiscountInfo() -> String? {
         guard let parkingLot = currentParkingLot else { return nil }
         
+        // 1분 주차로 할인 정보 미리 계산 (startTime 파라미터 추가)
+        let result = parkingLot.parkingFeeCalculator.calculateFee(
+            duration: 60, // 1분
+            vehicleProfile: currentVehicle,
+            driverProfile: userProfileVM.driverProfile,
+            specialConditionDiscounts: parkingLot.specialConditionDiscounts,
+            startTime: parkingStartTime
+        )
+        
+        return result.discountInfo
+    }
+    
+    private func getDiscountInfoWithHighlighting() -> AttributedString? {
+        guard let parkingLot = currentParkingLot else { return nil }
+        
         // 1분 주차로 할인 정보 미리 계산
         let result = parkingLot.parkingFeeCalculator.calculateFee(
             duration: 60, // 1분
             vehicleProfile: currentVehicle,
             driverProfile: userProfileVM.driverProfile,
-            specialConditionDiscounts: parkingLot.specialConditionDiscounts
+            specialConditionDiscounts: parkingLot.specialConditionDiscounts,
+            startTime: parkingStartTime
         )
         
-        return result.discountInfo
+        guard !result.applicableDiscounts.isEmpty else { return nil }
+        
+        var attributedString = AttributedString()
+        
+        if result.applicableDiscounts.count == 1 {
+            // 할인이 하나만 있는 경우
+            let discount = result.applicableDiscounts[0]
+            attributedString += AttributedString("적용된 할인: ")
+            attributedString += AttributedString("\(discount.name) \(Int(discount.percentage))%")
+        } else {
+            // 여러 할인이 있는 경우
+            attributedString += AttributedString("적용 가능: ")
+            
+            // 가장 높은 할인율 찾기
+            let bestDiscount = result.applicableDiscounts.max { $0.percentage < $1.percentage }
+            
+            for (index, discount) in result.applicableDiscounts.enumerated() {
+                if index > 0 {
+                    attributedString += AttributedString(", ")
+                }
+                
+                var discountText = AttributedString("\(discount.name) \(Int(discount.percentage))%")
+                
+                // 가장 높은 할인율인 경우 빨간색 볼드체로 표시
+                if discount.percentage == bestDiscount?.percentage {
+                    discountText.foregroundColor = .red
+                    discountText.font = .boldSystemFont(ofSize: UIFont.systemFontSize)
+                }
+                
+                attributedString += discountText
+            }
+        }
+        
+        return attributedString
     }
 }
 
 #Preview {
-    TimerCellView(isParkingActive: .constant(false))
+    TimerCellView(isParkingActive: .constant(false), testTimeOffset: 0)
         .environmentObject(UserProfileViewModel())
         .padding()
         .background(Color(.systemGroupedBackground))
+        .preferredColorScheme(.dark)
 }

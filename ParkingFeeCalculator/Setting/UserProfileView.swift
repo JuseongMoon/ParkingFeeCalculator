@@ -9,6 +9,7 @@ import SwiftUI
 
 struct UserProfileView: View {
     @EnvironmentObject var userProfileVM: UserProfileViewModel
+    @Environment(\.dismiss) private var dismiss
     @State private var showingVehicleForm = false
     @State private var showingDriverForm = false
     @State private var showingAlert = false
@@ -41,7 +42,9 @@ struct UserProfileView: View {
                 VehicleFormView(vehicleProfile: $userProfileVM.vehicleProfile)
             }
             .alert("알림", isPresented: $showingAlert) {
-                Button("확인") { }
+                Button("확인") { 
+                    dismiss()
+                }
             } message: {
                 Text(alertMessage)
             }
@@ -206,21 +209,17 @@ struct UserProfileView: View {
             }
             
             VStack(spacing: 8) {
+                // 차량 크기 정보
                 ProfileInfoRow(
                     icon: "car",
-                    title: "차량",
-                    value: userProfileVM.vehicleProfile.displayName
-                )
-                
-                ProfileInfoRow(
-                    icon: "tag",
                     title: "차량 크기",
                     value: userProfileVM.vehicleProfile.vehicleSize.displayName
                 )
                 
+                // 친환경 차량 정보
                 if userProfileVM.vehicleProfile.isEcoFriendly {
                     HStack {
-                        Image(systemName: "leaf")
+                        Image(systemName: "leaf.fill")
                             .foregroundColor(.green)
                             .frame(width: 20)
                         
@@ -229,13 +228,51 @@ struct UserProfileView: View {
                             .fontWeight(.medium)
                         
                         Spacer()
+                        HStack(spacing: 8) {
+                            if userProfileVM.vehicleProfile.isElectric {
+                                Text("전기차")
+                                    .font(.caption)
+                                    .padding(.horizontal, 8)
+                                    .padding(.vertical, 2)
+                                    .background(Color.blue.opacity(0.1))
+                                    .foregroundColor(.blue)
+                                    .cornerRadius(4)
+                            }
+                            
+                            if userProfileVM.vehicleProfile.isHydrogen {
+                                Text("수소차")
+                                    .font(.caption)
+                                    .padding(.horizontal, 8)
+                                    .padding(.vertical, 2)
+                                    .background(Color.cyan.opacity(0.1))
+                                    .foregroundColor(.cyan)
+                                    .cornerRadius(4)
+                            }
+                            
+                            if userProfileVM.vehicleProfile.isHybrid {
+                                Text("하이브리드")
+                                    .font(.caption)
+                                    .padding(.horizontal, 8)
+                                    .padding(.vertical, 2)
+                                    .background(Color.orange.opacity(0.1))
+                                    .foregroundColor(.orange)
+                                    .cornerRadius(4)
+                            }
+                        }
                     }
                     
-                    ProfileInfoRow(
-                        icon: "leaf.fill",
-                        title: "친환경 유형",
-                        value: userProfileVM.vehicleProfile.ecoFriendlyType
-                    )
+                    // 친환경 세부 유형들
+                } else {
+                    HStack {
+                        Image(systemName: "car.fill")
+                            .foregroundColor(.secondary)
+                            .frame(width: 20)
+                        
+                        Text("일반 차량")
+                            .foregroundColor(.secondary)
+                        
+                        Spacer()
+                    }
                 }
             }
         }
@@ -408,8 +445,8 @@ struct VehicleFormView: View {
                 }
                 
                 Section("친환경 여부") {
-                    Toggle("저공해 인증", isOn: $tempProfile.isLowEmission)
-                    Toggle("전기/수소 차량", isOn: $tempProfile.isElectricHydrogen)
+                    Toggle("전기차", isOn: $tempProfile.isElectric)
+                    Toggle("수소차", isOn: $tempProfile.isHydrogen)
                     Toggle("하이브리드", isOn: $tempProfile.isHybrid)
                 }
             }

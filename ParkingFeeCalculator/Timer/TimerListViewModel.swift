@@ -2,7 +2,7 @@
 //  TimerListViewModel.swift
 //  ParkingFeeCalculator
 //
-//  Created by GPT-5 on 8/13/25.
+//  Created by 문주성 on 8/13/25.
 //
 
 import Foundation

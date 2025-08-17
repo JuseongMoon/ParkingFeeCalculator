@@ -2,34 +2,37 @@
 //  ParkingLotEditView.swift
 //  ParkingFeeCalculator
 //
-//  Created by GPT-5 on 8/13/25.
+//  Created by 문주성 on 8/13/25.
 //
 
 import SwiftUI
 
 struct ParkingLotEditView: View {
     @Environment(\.dismiss) private var dismiss
+    @EnvironmentObject var userProfileVM: UserProfileViewModel
 
     @State private var name: String = ""
     @State private var address: String = ""
-    @State private var hasInitialFee: Bool = true
-    @State private var initialFee: Int = 1000
-    @State private var initialMinutes: Int = 30
-    @State private var additionalFee: Int = 500
-    @State private var additionalMinutes: Int = 10
-    @State private var maxFee: Int = 10000
-    @State private var freeMinutes: Int = 0
-    @State private var dailyMaxFee: Int = 0
+    @State private var hasInitialFee: Bool = false
+    @State private var initialFee: Int = ParkingLotDefaults.initialFee
+    @State private var initialMinutes: Int = ParkingLotDefaults.initialMinutes
+    @State private var additionalFee: Int = ParkingLotDefaults.additionalFee
+    @State private var additionalMinutes: Int = ParkingLotDefaults.additionalMinutes
+    @State private var hasMaxFee: Bool = false
+    @State private var maxFee: Int = ParkingLotDefaults.maxFee
+    @State private var freeMinutes: Int = ParkingLotDefaults.freeMinutes
+    @State private var hasDailyMaxFee: Bool = false
+    @State private var dailyMaxFee: Int = ParkingLotDefaults.dailyMaxFee
     @State private var hasNightRate: Bool = false
-    @State private var nightFlatFee: Int = 0
-    @State private var nightStartHour: Int = 22
-    @State private var nightEndHour: Int = 7
-    @State private var mildDiscountPercentage: Double = 80  // 경증 장애인 일반적 할인율
-    @State private var severeDiscountPercentage: Double = 80  // 중증 장애인 일반적 할인율
-    @State private var nationalMeritDiscountPercentage: Double = 80  // 국가유공자 일반적 할인율
-    @State private var exemplaryTaxpayerDiscountPercentage: Double = 100  // 모범납세자 일반적 할인율
-    @State private var multiChildDiscountPercentage: Double = 50  // 다자녀 일반적 할인율
-    @State private var seniorDiscountPercentage: Double = 50  // 고령자 일반적 할인율
+    @State private var nightFlatFee: Int = ParkingLotDefaults.nightFlatFee
+    @State private var nightStartHour: Int = ParkingLotDefaults.nightStartHour
+    @State private var nightEndHour: Int = ParkingLotDefaults.nightEndHour
+    @State private var mildDiscountPercentage: Double = ParkingLotDefaults.mildDiscountPercentage
+    @State private var severeDiscountPercentage: Double = ParkingLotDefaults.severeDiscountPercentage
+    @State private var nationalMeritDiscountPercentage: Double = ParkingLotDefaults.nationalMeritDiscountPercentage
+    @State private var exemplaryTaxpayerDiscountPercentage: Double = ParkingLotDefaults.exemplaryTaxpayerDiscountPercentage
+    @State private var multiChildDiscountPercentage: Double = ParkingLotDefaults.multiChildDiscountPercentage
+    @State private var seniorDiscountPercentage: Double = ParkingLotDefaults.seniorDiscountPercentage
     @State private var hasMildDiscount: Bool = false
     @State private var hasSevereDiscount: Bool = false
     @State private var hasNationalMeritDiscount: Bool = false
@@ -39,19 +42,18 @@ struct ParkingLotEditView: View {
     
     // 차량 관련 할인 상태
     @State private var hasLightCarDiscount: Bool = false
-    @State private var lightCarDiscountPercentage: Double = 50  // 경차 일반적 할인율
+    @State private var lightCarDiscountPercentage: Double = ParkingLotDefaults.lightCarDiscountPercentage
     @State private var hasNormalCarDiscount: Bool = false
-    @State private var normalCarDiscountPercentage: Double = 0  // 일반차는 기본 할인 없음
-    @State private var hasMediumCarDiscount: Bool = false
-    @State private var mediumCarDiscountPercentage: Double = 0  // 중형차는 기본 할인 없음
+    @State private var normalCarDiscountPercentage: Double = ParkingLotDefaults.normalCarDiscountPercentage
     @State private var hasLargeCarDiscount: Bool = false
-    @State private var largeCarDiscountPercentage: Double = 0  // 대형차는 기본 할인 없음
-    @State private var hasLowEmissionDiscount: Bool = false
-    @State private var lowEmissionDiscountPercentage: Double = 50  // 저공해 인증 일반적 할인율
-    @State private var hasElectricHydrogenDiscount: Bool = false
-    @State private var electricHydrogenDiscountPercentage: Double = 50  // 전기/수소 일반적 할인율
+    @State private var largeCarDiscountPercentage: Double = ParkingLotDefaults.largeCarDiscountPercentage
+
+    @State private var hasElectricDiscount: Bool = false
+    @State private var electricDiscountPercentage: Double = ParkingLotDefaults.electricDiscountPercentage
+    @State private var hasHydrogenDiscount: Bool = false
+    @State private var hydrogenDiscountPercentage: Double = ParkingLotDefaults.hydrogenDiscountPercentage
     @State private var hasHybridDiscount: Bool = false
-    @State private var hybridDiscountPercentage: Double = 50  // 하이브리드 일반적 할인율
+    @State private var hybridDiscountPercentage: Double = ParkingLotDefaults.hybridDiscountPercentage
 
     let parkingLotProfile: ParkingLotProfile?
     let onSave: (ParkingLotProfile) -> Void
@@ -69,9 +71,11 @@ struct ParkingLotEditView: View {
         _initialMinutes = State(initialValue: profile.parkingFeeCalculator.initialMinutes)
         _additionalFee = State(initialValue: profile.parkingFeeCalculator.additionalFee)
         _additionalMinutes = State(initialValue: profile.parkingFeeCalculator.additionalMinutes)
-            _maxFee = State(initialValue: profile.parkingFeeCalculator.maxFee ?? 0)
+            _hasMaxFee = State(initialValue: profile.parkingFeeCalculator.maxFee != nil)
+            _maxFee = State(initialValue: profile.parkingFeeCalculator.maxFee ?? 20000)
             _freeMinutes = State(initialValue: profile.parkingFeeCalculator.freeMinutes)
-            _dailyMaxFee = State(initialValue: profile.parkingFeeCalculator.dailyMaxFee ?? 0)
+            _hasDailyMaxFee = State(initialValue: profile.parkingFeeCalculator.dailyMaxFee != nil)
+            _dailyMaxFee = State(initialValue: profile.parkingFeeCalculator.dailyMaxFee ?? 20000)
             
             // 야간 요금 설정
             _hasNightRate = State(initialValue: profile.parkingFeeCalculator.hasNightRate)
@@ -99,14 +103,13 @@ struct ParkingLotEditView: View {
             _lightCarDiscountPercentage = State(initialValue: discounts.lightCarDiscountPercentage ?? 0)
             _hasNormalCarDiscount = State(initialValue: discounts.normalCarDiscountPercentage != nil)
             _normalCarDiscountPercentage = State(initialValue: discounts.normalCarDiscountPercentage ?? 0)
-            _hasMediumCarDiscount = State(initialValue: discounts.mediumCarDiscountPercentage != nil)
-            _mediumCarDiscountPercentage = State(initialValue: discounts.mediumCarDiscountPercentage ?? 0)
             _hasLargeCarDiscount = State(initialValue: discounts.largeCarDiscountPercentage != nil)
             _largeCarDiscountPercentage = State(initialValue: discounts.largeCarDiscountPercentage ?? 0)
-            _hasLowEmissionDiscount = State(initialValue: discounts.lowEmissionDiscountPercentage != nil)
-            _lowEmissionDiscountPercentage = State(initialValue: discounts.lowEmissionDiscountPercentage ?? 0)
-            _hasElectricHydrogenDiscount = State(initialValue: discounts.electricHydrogenDiscountPercentage != nil)
-            _electricHydrogenDiscountPercentage = State(initialValue: discounts.electricHydrogenDiscountPercentage ?? 0)
+
+            _hasElectricDiscount = State(initialValue: discounts.electricDiscountPercentage != nil)
+            _electricDiscountPercentage = State(initialValue: discounts.electricDiscountPercentage ?? 0)
+            _hasHydrogenDiscount = State(initialValue: discounts.hydrogenDiscountPercentage != nil)
+            _hydrogenDiscountPercentage = State(initialValue: discounts.hydrogenDiscountPercentage ?? 0)
             _hasHybridDiscount = State(initialValue: discounts.hybridDiscountPercentage != nil)
             _hybridDiscountPercentage = State(initialValue: discounts.hybridDiscountPercentage ?? 0)
         }
@@ -130,14 +133,22 @@ struct ParkingLotEditView: View {
                 }
                 
                 Section("추가 요금") {
-                    Stepper(value: $additionalFee, in: 0...20_000, step: 100) { row("추가요금", suffix: "원", value: additionalFee) }
-                    Stepper(value: $additionalMinutes, in: 1...120, step: 1) { row("단위시간", suffix: "분", value: additionalMinutes) }
+                    Stepper(value: $additionalFee, in: 0...20_000, step: 50) { row("추가요금", suffix: "원", value: additionalFee) }
+                    Stepper(value: $additionalMinutes, in: 0...240, step: 5) { row("단위시간", suffix: "분", value: additionalMinutes) }
                 }
                 
                 Section("할인 및 제한") {
                     Stepper(value: $freeMinutes, in: 0...60, step: 5) { row("무료시간", suffix: "분", value: freeMinutes) }
-                    Stepper(value: $maxFee, in: 0...200_000, step: 1000) { row("1회 최대요금", suffix: "원", value: maxFee) }
-                    Stepper(value: $dailyMaxFee, in: 0...200_000, step: 1000) { row("일일 최대요금", suffix: "원", value: dailyMaxFee) }
+                    
+                    Toggle("1회 최대요금 적용", isOn: $hasMaxFee)
+                    if hasMaxFee {
+                        Stepper(value: $maxFee, in: 0...200_000, step: 1000) { row("1회 최대요금", suffix: "원", value: maxFee) }
+                    }
+                    
+                    Toggle("일일 최대요금 적용", isOn: $hasDailyMaxFee)
+                    if hasDailyMaxFee {
+                        Stepper(value: $dailyMaxFee, in: 0...200_000, step: 1000) { row("일일 최대요금", suffix: "원", value: dailyMaxFee) }
+                    }
                 }
                 
                 Section("야간 요금") {
@@ -161,7 +172,7 @@ struct ParkingLotEditView: View {
                 }
                 
                 Section("특별 조건 할인") {
-                    Toggle("경증 장애인 할인", isOn: $hasMildDiscount)
+                    discountToggle("경증 장애인 할인", isOn: $hasMildDiscount, isApplicable: userProfileVM.driverProfile.isDisabled && userProfileVM.driverProfile.disabilityLevel == .mild)
                         .onChange(of: hasMildDiscount) { newValue in
                             if newValue && mildDiscountPercentage == 0 {
                                 mildDiscountPercentage = 80
@@ -173,7 +184,7 @@ struct ParkingLotEditView: View {
                         }
                     }
                     
-                    Toggle("중증 장애인 할인", isOn: $hasSevereDiscount)
+                    discountToggle("중증 장애인 할인", isOn: $hasSevereDiscount, isApplicable: userProfileVM.driverProfile.isDisabled && userProfileVM.driverProfile.disabilityLevel == .severe)
                         .onChange(of: hasSevereDiscount) { newValue in
                             if newValue && severeDiscountPercentage == 0 {
                                 severeDiscountPercentage = 80
@@ -185,7 +196,7 @@ struct ParkingLotEditView: View {
                         }
                     }
                     
-                    Toggle("국가유공자 할인", isOn: $hasNationalMeritDiscount)
+                    discountToggle("국가유공자 할인", isOn: $hasNationalMeritDiscount, isApplicable: userProfileVM.driverProfile.isNationalMerit)
                         .onChange(of: hasNationalMeritDiscount) { newValue in
                             if newValue && nationalMeritDiscountPercentage == 0 {
                                 nationalMeritDiscountPercentage = 80
@@ -197,7 +208,7 @@ struct ParkingLotEditView: View {
                         }
                     }
                     
-                    Toggle("모범납세자 할인", isOn: $hasExemplaryTaxpayerDiscount)
+                    discountToggle("모범납세자 할인", isOn: $hasExemplaryTaxpayerDiscount, isApplicable: userProfileVM.driverProfile.isExemplaryTaxpayer)
                         .onChange(of: hasExemplaryTaxpayerDiscount) { newValue in
                             if newValue && exemplaryTaxpayerDiscountPercentage == 0 {
                                 exemplaryTaxpayerDiscountPercentage = 100
@@ -209,7 +220,7 @@ struct ParkingLotEditView: View {
                         }
                     }
                     
-                    Toggle("다자녀 할인", isOn: $hasMultiChildDiscount)
+                    discountToggle("다자녀 할인", isOn: $hasMultiChildDiscount, isApplicable: userProfileVM.driverProfile.isMultiChild)
                         .onChange(of: hasMultiChildDiscount) { newValue in
                             if newValue && multiChildDiscountPercentage == 0 {
                                 multiChildDiscountPercentage = 50
@@ -221,7 +232,7 @@ struct ParkingLotEditView: View {
                         }
                     }
                     
-                    Toggle("고령자 할인", isOn: $hasSeniorDiscount)
+                    discountToggle("고령자 할인", isOn: $hasSeniorDiscount, isApplicable: userProfileVM.driverProfile.isSenior)
                         .onChange(of: hasSeniorDiscount) { newValue in
                             if newValue && seniorDiscountPercentage == 0 {
                                 seniorDiscountPercentage = 50
@@ -235,7 +246,7 @@ struct ParkingLotEditView: View {
                 }
                 
                 Section("차량 크기별 할인") {
-                    Toggle("경차 할인", isOn: $hasLightCarDiscount)
+                    discountToggle("경차 할인", isOn: $hasLightCarDiscount, isApplicable: userProfileVM.vehicleProfile.vehicleSize == .light)
                         .onChange(of: hasLightCarDiscount) { newValue in
                             if newValue && lightCarDiscountPercentage == 0 {
                                 lightCarDiscountPercentage = 50
@@ -247,69 +258,45 @@ struct ParkingLotEditView: View {
                         }
                     }
                     
-                    Toggle("일반차 할인", isOn: $hasNormalCarDiscount)
-                        .onChange(of: hasNormalCarDiscount) { newValue in
-                            if newValue && normalCarDiscountPercentage == 0 {
-                                normalCarDiscountPercentage = 10
-                            }
-                        }
-                    if hasNormalCarDiscount {
-                        Stepper(value: $normalCarDiscountPercentage, in: 0...100, step: 5) {
-                            row("일반차 할인율", suffix: "%", value: Int(normalCarDiscountPercentage))
-                        }
-                    }
-                    
-                    Toggle("중형차 할인", isOn: $hasMediumCarDiscount)
-                        .onChange(of: hasMediumCarDiscount) { newValue in
-                            if newValue && mediumCarDiscountPercentage == 0 {
-                                mediumCarDiscountPercentage = 5
-                            }
-                        }
-                    if hasMediumCarDiscount {
-                        Stepper(value: $mediumCarDiscountPercentage, in: 0...100, step: 5) {
-                            row("중형차 할인율", suffix: "%", value: Int(mediumCarDiscountPercentage))
-                        }
-                    }
-                    
-                    Toggle("대형차 할인", isOn: $hasLargeCarDiscount)
+                    discountToggle("대형차 할증", isOn: $hasLargeCarDiscount, isApplicable: userProfileVM.vehicleProfile.vehicleSize == .large)
                         .onChange(of: hasLargeCarDiscount) { newValue in
                             if newValue && largeCarDiscountPercentage == 0 {
                                 largeCarDiscountPercentage = 0
                             }
                         }
                     if hasLargeCarDiscount {
-                        Stepper(value: $largeCarDiscountPercentage, in: 0...100, step: 5) {
-                            row("대형차 할인율", suffix: "%", value: Int(largeCarDiscountPercentage))
+                        Stepper(value: $largeCarDiscountPercentage, in: 100...300, step: 10) {
+                            row("대형차 할증", suffix: "%", value: Int(largeCarDiscountPercentage))
                         }
                     }
                 }
                 
                 Section("친환경 차량 할인") {
-                    Toggle("저공해 인증 할인", isOn: $hasLowEmissionDiscount)
-                        .onChange(of: hasLowEmissionDiscount) { newValue in
-                            if newValue && lowEmissionDiscountPercentage == 0 {
-                                lowEmissionDiscountPercentage = 50
+                    discountToggle("전기차 할인", isOn: $hasElectricDiscount, isApplicable: userProfileVM.vehicleProfile.isElectric)
+                        .onChange(of: hasElectricDiscount) { newValue in
+                            if newValue && electricDiscountPercentage == 0 {
+                                electricDiscountPercentage = 50
                             }
                         }
-                    if hasLowEmissionDiscount {
-                        Stepper(value: $lowEmissionDiscountPercentage, in: 0...100, step: 5) {
-                            row("저공해 인증 할인율", suffix: "%", value: Int(lowEmissionDiscountPercentage))
+                    if hasElectricDiscount {
+                        Stepper(value: $electricDiscountPercentage, in: 0...100, step: 5) {
+                            row("전기차 할인율", suffix: "%", value: Int(electricDiscountPercentage))
                         }
                     }
                     
-                    Toggle("전기/수소 차량 할인", isOn: $hasElectricHydrogenDiscount)
-                        .onChange(of: hasElectricHydrogenDiscount) { newValue in
-                            if newValue && electricHydrogenDiscountPercentage == 0 {
-                                electricHydrogenDiscountPercentage = 50
+                    discountToggle("수소차 할인", isOn: $hasHydrogenDiscount, isApplicable: userProfileVM.vehicleProfile.isHydrogen)
+                        .onChange(of: hasHydrogenDiscount) { newValue in
+                            if newValue && hydrogenDiscountPercentage == 0 {
+                                hydrogenDiscountPercentage = 50
                             }
                         }
-                    if hasElectricHydrogenDiscount {
-                        Stepper(value: $electricHydrogenDiscountPercentage, in: 0...100, step: 5) {
-                            row("전기/수소 할인율", suffix: "%", value: Int(electricHydrogenDiscountPercentage))
+                    if hasHydrogenDiscount {
+                        Stepper(value: $hydrogenDiscountPercentage, in: 0...100, step: 5) {
+                            row("수소차 할인율", suffix: "%", value: Int(hydrogenDiscountPercentage))
                         }
                     }
                     
-                    Toggle("하이브리드 차량 할인", isOn: $hasHybridDiscount)
+                    discountToggle("하이브리드 차량 할인", isOn: $hasHybridDiscount, isApplicable: userProfileVM.vehicleProfile.isHybrid)
                         .onChange(of: hasHybridDiscount) { newValue in
                             if newValue && hybridDiscountPercentage == 0 {
                                 hybridDiscountPercentage = 50
@@ -341,9 +328,9 @@ struct ParkingLotEditView: View {
             initialMinutes: hasInitialFee ? initialMinutes : 0,
             additionalFee: additionalFee,
             additionalMinutes: additionalMinutes,
-            maxFee: maxFee == 0 ? nil : maxFee,
+            maxFee: hasMaxFee ? maxFee : nil,
             freeMinutes: freeMinutes,
-            dailyMaxFee: dailyMaxFee == 0 ? nil : dailyMaxFee,
+            dailyMaxFee: hasDailyMaxFee ? dailyMaxFee : nil,
             nightFlatFee: hasNightRate ? (nightFlatFee == 0 ? nil : nightFlatFee) : nil,
             nightStartHour: hasNightRate ? nightStartHour : nil,
             nightEndHour: hasNightRate ? nightEndHour : nil
@@ -358,10 +345,10 @@ struct ParkingLotEditView: View {
             seniorDiscountPercentage: hasSeniorDiscount ? seniorDiscountPercentage : nil,
             lightCarDiscountPercentage: hasLightCarDiscount ? lightCarDiscountPercentage : nil,
             normalCarDiscountPercentage: hasNormalCarDiscount ? normalCarDiscountPercentage : nil,
-            mediumCarDiscountPercentage: hasMediumCarDiscount ? mediumCarDiscountPercentage : nil,
             largeCarDiscountPercentage: hasLargeCarDiscount ? largeCarDiscountPercentage : nil,
-            lowEmissionDiscountPercentage: hasLowEmissionDiscount ? lowEmissionDiscountPercentage : nil,
-            electricHydrogenDiscountPercentage: hasElectricHydrogenDiscount ? electricHydrogenDiscountPercentage : nil,
+
+            electricDiscountPercentage: hasElectricDiscount ? electricDiscountPercentage : nil,
+            hydrogenDiscountPercentage: hasHydrogenDiscount ? hydrogenDiscountPercentage : nil,
             hybridDiscountPercentage: hasHybridDiscount ? hybridDiscountPercentage : nil
         )
         
@@ -399,6 +386,19 @@ struct ParkingLotEditView: View {
             Text("\(value)\(suffix)")
                 .monospacedDigit()
                 .foregroundStyle(.secondary)
+        }
+    }
+    
+    private func discountToggle(_ title: String, isOn: Binding<Bool>, isApplicable: Bool) -> some View {
+        Toggle(isOn: isOn) {
+            HStack {
+                Text(title)
+                if isApplicable {
+                    Image(systemName: "checkmark.circle.fill")
+                        .foregroundColor(.green)
+                        .font(.title3)
+                }
+            }
         }
     }
 }
