@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import WidgetKit
 
 struct TimerCellView: View {
     @Binding var isParkingActive: Bool
@@ -15,6 +16,7 @@ struct TimerCellView: View {
     @State private var displayTimer: Timer? // 경과 시간 표시용 타이머 (1초마다)
     @State private var feeCalculationTimer: Timer? // 주차비 계산용 타이머 (1분마다)
     @State private var showingStopConfirmation = false
+    // @StateObject private var liveActivityController = ParkingLiveActivityController()
     
     // 실제 주차장 정보 (외부에서 주입받음)
     let parkingLotProfile: ParkingLotProfile?
@@ -323,11 +325,30 @@ struct TimerCellView: View {
         currentTime = Date()
         // 주차 시작 시 즉시 기본요금 계산
         calculateCurrentFee()
+        // 위젯 업데이트
+        updateWidget()
+        
+        // Live Activity 시작 (임시 주석)
+        /*
+        guard let parkingLot = currentParkingLot else { return }
+        liveActivityController.start(
+            startedAt: parkingStartTime,
+            lotName: parkingLot.name,
+            initialFee: parkingLot.parkingFeeCalculator.initialFee,
+            additionalFee: parkingLot.parkingFeeCalculator.additionalFee,
+            additionalMinutes: parkingLot.parkingFeeCalculator.additionalMinutes,
+            currentFee: currentFee
+        )
+        */
     }
     
     private func stopParking() {
         isParkingActive = false
         stopTimer()
+        // 위젯 업데이트
+        updateWidget()
+        // Live Activity 종료 (임시 주석)
+        // liveActivityController.end()
         // 여기서 주차 세션을 저장하는 로직 추가
     }
     
@@ -376,6 +397,41 @@ struct TimerCellView: View {
         )
         
         currentFee = result.finalFee
+        
+        // 위젯 업데이트
+        updateWidget()
+        
+        // Live Activity 업데이트 (임시 주석)
+        /*
+        guard let parkingLot = currentParkingLot else { return }
+        liveActivityController.update(
+            currentFee: currentFee,
+            startedAt: parkingStartTime,
+            lotName: parkingLot.name
+        )
+        */
+    }
+    
+    // MARK: - 위젯 업데이트
+    private func updateWidget() {
+        guard let parkingLot = currentParkingLot else { return }
+        
+        // UserDefaults를 통한 직접 데이터 공유
+        let userDefaults = UserDefaults(suiteName: "group.com.parkingfeecalculator.widget")
+        
+        // SharedParkingData와 동일한 구조로 데이터 생성
+        let parkingData: [String: Any] = [
+            "isParkingActive": isParkingActive,
+            "currentFee": currentFee,
+            "parkingStartTime": parkingStartTime.timeIntervalSince1970,
+            "parkingLotName": parkingLot.name
+        ]
+        
+        if let data = try? JSONSerialization.data(withJSONObject: parkingData) {
+            userDefaults?.set(data, forKey: "sharedParkingData")
+            // 위젯 새로고침 요청
+            WidgetCenter.shared.reloadAllTimelines()
+        }
     }
     
     private func getDiscountInfo() -> String? {

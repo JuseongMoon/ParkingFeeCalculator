@@ -6,14 +6,93 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		63D4BD402E51F193009416F2 /* WidgetKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 63D4BD3F2E51F193009416F2 /* WidgetKit.framework */; };
+		63D4BD422E51F193009416F2 /* SwiftUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 63D4BD412E51F193009416F2 /* SwiftUI.framework */; };
+		63D4BD512E51F193009416F2 /* ParkingFeeCalculatorWidgetExtension.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 63D4BD3D2E51F193009416F2 /* ParkingFeeCalculatorWidgetExtension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		63D4BD4F2E51F193009416F2 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 63A24CD32E4CCE0300CFA877 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 63D4BD3C2E51F193009416F2;
+			remoteInfo = ParkingFeeCalculatorWidgetExtension;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		63D4BD522E51F193009416F2 /* Embed Foundation Extensions */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 13;
+			files = (
+				63D4BD512E51F193009416F2 /* ParkingFeeCalculatorWidgetExtension.appex in Embed Foundation Extensions */,
+			);
+			name = "Embed Foundation Extensions";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
+
 /* Begin PBXFileReference section */
 		63A24CDB2E4CCE0300CFA877 /* ParkingFeeCalculator.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = ParkingFeeCalculator.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		63D4BD3D2E51F193009416F2 /* ParkingFeeCalculatorWidgetExtension.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = ParkingFeeCalculatorWidgetExtension.appex; sourceTree = BUILT_PRODUCTS_DIR; };
+		63D4BD3F2E51F193009416F2 /* WidgetKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = WidgetKit.framework; path = System/Library/Frameworks/WidgetKit.framework; sourceTree = SDKROOT; };
+		63D4BD412E51F193009416F2 /* SwiftUI.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SwiftUI.framework; path = System/Library/Frameworks/SwiftUI.framework; sourceTree = SDKROOT; };
+		63D4BD602E51F29F009416F2 /* ParkingFeeCalculatorWidgetExtension.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = ParkingFeeCalculatorWidgetExtension.entitlements; sourceTree = "<group>"; };
 /* End PBXFileReference section */
+
+/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		63D4BD552E51F193009416F2 /* Exceptions for "ParkingFeeCalculatorWidget" folder in "ParkingFeeCalculatorWidgetExtension" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Info.plist,
+			);
+			target = 63D4BD3C2E51F193009416F2 /* ParkingFeeCalculatorWidgetExtension */;
+		};
+		63D4BD582E51F1F9009416F2 /* Exceptions for "ParkingFeeCalculator" folder in "ParkingFeeCalculatorWidgetExtension" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Shared/ParkingDataManagaer.swift,
+				Widget/ParkingFeeWidget.swift,
+				Widget/ParkingFeeWidgetTimelineView.swift,
+				Widget/ParkingFeeWidgetView.swift,
+				Widget/ParkingWidgetsBundle.swift,
+				Widget/WidgetBackgroundView.swift,
+			);
+			target = 63D4BD3C2E51F193009416F2 /* ParkingFeeCalculatorWidgetExtension */;
+		};
+		63D4BD5A2E51F20D009416F2 /* Exceptions for "ParkingFeeCalculator" folder in "ParkingFeeCalculator" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Widget/ParkingFeeWidget.swift,
+				Widget/ParkingFeeWidgetTimelineView.swift,
+				Widget/ParkingFeeWidgetView.swift,
+				Widget/ParkingWidgetsBundle.swift,
+				Widget/WidgetBackgroundView.swift,
+			);
+			target = 63A24CDA2E4CCE0300CFA877 /* ParkingFeeCalculator */;
+		};
+/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		63A24CDD2E4CCE0300CFA877 /* ParkingFeeCalculator */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				63D4BD5A2E51F20D009416F2 /* Exceptions for "ParkingFeeCalculator" folder in "ParkingFeeCalculator" target */,
+				63D4BD582E51F1F9009416F2 /* Exceptions for "ParkingFeeCalculator" folder in "ParkingFeeCalculatorWidgetExtension" target */,
+			);
 			path = ParkingFeeCalculator;
+			sourceTree = "<group>";
+		};
+		63D4BD432E51F193009416F2 /* ParkingFeeCalculatorWidget */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				63D4BD552E51F193009416F2 /* Exceptions for "ParkingFeeCalculatorWidget" folder in "ParkingFeeCalculatorWidgetExtension" target */,
+			);
+			path = ParkingFeeCalculatorWidget;
 			sourceTree = "<group>";
 		};
 /* End PBXFileSystemSynchronizedRootGroup section */
@@ -26,13 +105,25 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		63D4BD3A2E51F193009416F2 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				63D4BD422E51F193009416F2 /* SwiftUI.framework in Frameworks */,
+				63D4BD402E51F193009416F2 /* WidgetKit.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
 		63A24CD22E4CCE0300CFA877 = {
 			isa = PBXGroup;
 			children = (
+				63D4BD602E51F29F009416F2 /* ParkingFeeCalculatorWidgetExtension.entitlements */,
 				63A24CDD2E4CCE0300CFA877 /* ParkingFeeCalculator */,
+				63D4BD432E51F193009416F2 /* ParkingFeeCalculatorWidget */,
+				63D4BD3E2E51F193009416F2 /* Frameworks */,
 				63A24CDC2E4CCE0300CFA877 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -41,8 +132,18 @@
 			isa = PBXGroup;
 			children = (
 				63A24CDB2E4CCE0300CFA877 /* ParkingFeeCalculator.app */,
+				63D4BD3D2E51F193009416F2 /* ParkingFeeCalculatorWidgetExtension.appex */,
 			);
 			name = Products;
+			sourceTree = "<group>";
+		};
+		63D4BD3E2E51F193009416F2 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				63D4BD3F2E51F193009416F2 /* WidgetKit.framework */,
+				63D4BD412E51F193009416F2 /* SwiftUI.framework */,
+			);
+			name = Frameworks;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -55,10 +156,12 @@
 				63A24CD72E4CCE0300CFA877 /* Sources */,
 				63A24CD82E4CCE0300CFA877 /* Frameworks */,
 				63A24CD92E4CCE0300CFA877 /* Resources */,
+				63D4BD522E51F193009416F2 /* Embed Foundation Extensions */,
 			);
 			buildRules = (
 			);
 			dependencies = (
+				63D4BD502E51F193009416F2 /* PBXTargetDependency */,
 			);
 			fileSystemSynchronizedGroups = (
 				63A24CDD2E4CCE0300CFA877 /* ParkingFeeCalculator */,
@@ -69,6 +172,28 @@
 			productName = ParkingFeeCalculator;
 			productReference = 63A24CDB2E4CCE0300CFA877 /* ParkingFeeCalculator.app */;
 			productType = "com.apple.product-type.application";
+		};
+		63D4BD3C2E51F193009416F2 /* ParkingFeeCalculatorWidgetExtension */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 63D4BD562E51F193009416F2 /* Build configuration list for PBXNativeTarget "ParkingFeeCalculatorWidgetExtension" */;
+			buildPhases = (
+				63D4BD392E51F193009416F2 /* Sources */,
+				63D4BD3A2E51F193009416F2 /* Frameworks */,
+				63D4BD3B2E51F193009416F2 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			fileSystemSynchronizedGroups = (
+				63D4BD432E51F193009416F2 /* ParkingFeeCalculatorWidget */,
+			);
+			name = ParkingFeeCalculatorWidgetExtension;
+			packageProductDependencies = (
+			);
+			productName = ParkingFeeCalculatorWidgetExtension;
+			productReference = 63D4BD3D2E51F193009416F2 /* ParkingFeeCalculatorWidgetExtension.appex */;
+			productType = "com.apple.product-type.app-extension";
 		};
 /* End PBXNativeTarget section */
 
@@ -81,6 +206,9 @@
 				LastUpgradeCheck = 1640;
 				TargetAttributes = {
 					63A24CDA2E4CCE0300CFA877 = {
+						CreatedOnToolsVersion = 16.4;
+					};
+					63D4BD3C2E51F193009416F2 = {
 						CreatedOnToolsVersion = 16.4;
 					};
 				};
@@ -100,12 +228,20 @@
 			projectRoot = "";
 			targets = (
 				63A24CDA2E4CCE0300CFA877 /* ParkingFeeCalculator */,
+				63D4BD3C2E51F193009416F2 /* ParkingFeeCalculatorWidgetExtension */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
 		63A24CD92E4CCE0300CFA877 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		63D4BD3B2E51F193009416F2 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -122,7 +258,22 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		63D4BD392E51F193009416F2 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		63D4BD502E51F193009416F2 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 63D4BD3C2E51F193009416F2 /* ParkingFeeCalculatorWidgetExtension */;
+			targetProxy = 63D4BD4F2E51F193009416F2 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
 
 /* Begin XCBuildConfiguration section */
 		63A24CE42E4CCE0400CFA877 /* Debug */ = {
@@ -251,17 +402,21 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = ParkingFeeCalculator/ParkingFeeCalculator.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 5;
+				CURRENT_PROJECT_VERSION = 6;
 				DEVELOPMENT_TEAM = 4823B5JB69;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_CFBundleDisplayName = "주차비 계산기";
+				INFOPLIST_KEY_NSSupportsLiveActivities = YES;
+				INFOPLIST_KEY_NSSupportsLiveActivitiesFrequentUpdates = YES;
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_WKSupportsLiveActivityLaunchAttributeTypes = "";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -283,17 +438,21 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = ParkingFeeCalculator/ParkingFeeCalculator.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 5;
+				CURRENT_PROJECT_VERSION = 6;
 				DEVELOPMENT_TEAM = 4823B5JB69;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_CFBundleDisplayName = "주차비 계산기";
+				INFOPLIST_KEY_NSSupportsLiveActivities = YES;
+				INFOPLIST_KEY_NSSupportsLiveActivitiesFrequentUpdates = YES;
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_WKSupportsLiveActivityLaunchAttributeTypes = "";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -301,6 +460,72 @@
 				MARKETING_VERSION = 1.0.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.ScienceFiction.ParkingFeeCalculator;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = NO;
+				SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 1;
+			};
+			name = Release;
+		};
+		63D4BD532E51F193009416F2 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				ASSETCATALOG_COMPILER_WIDGET_BACKGROUND_COLOR_NAME = WidgetBackground;
+				CODE_SIGN_ENTITLEMENTS = ParkingFeeCalculatorWidgetExtension.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 4823B5JB69;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = ParkingFeeCalculatorWidget/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = ParkingFeeCalculatorWidget;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				INFOPLIST_KEY_NSSupportsLiveActivities = YES;
+				INFOPLIST_KEY_NSSupportsLiveActivitiesFrequentUpdates = YES;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.ScienceFiction.ParkingFeeCalculator.ParkingFeeCalculatorWidget;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = NO;
+				SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 1;
+			};
+			name = Debug;
+		};
+		63D4BD542E51F193009416F2 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				ASSETCATALOG_COMPILER_WIDGET_BACKGROUND_COLOR_NAME = WidgetBackground;
+				CODE_SIGN_ENTITLEMENTS = ParkingFeeCalculatorWidgetExtension.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 4823B5JB69;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = ParkingFeeCalculatorWidget/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = ParkingFeeCalculatorWidget;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				INFOPLIST_KEY_NSSupportsLiveActivities = YES;
+				INFOPLIST_KEY_NSSupportsLiveActivitiesFrequentUpdates = YES;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.ScienceFiction.ParkingFeeCalculator.ParkingFeeCalculatorWidget;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
 				SUPPORTS_MACCATALYST = NO;
 				SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD = NO;
@@ -327,6 +552,15 @@
 			buildConfigurations = (
 				63A24CE72E4CCE0400CFA877 /* Debug */,
 				63A24CE82E4CCE0400CFA877 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		63D4BD562E51F193009416F2 /* Build configuration list for PBXNativeTarget "ParkingFeeCalculatorWidgetExtension" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				63D4BD532E51F193009416F2 /* Debug */,
+				63D4BD542E51F193009416F2 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
