@@ -16,7 +16,7 @@ struct TimerCellView: View {
     @State private var displayTimer: Timer? // 경과 시간 표시용 타이머 (1초마다)
     @State private var feeCalculationTimer: Timer? // 주차비 계산용 타이머 (1분마다)
     @State private var showingStopConfirmation = false
-    // @StateObject private var liveActivityController = ParkingLiveActivityController()
+    @StateObject private var liveActivityController = ParkingLiveActivityController()
     
     // 실제 주차장 정보 (외부에서 주입받음)
     let parkingLotProfile: ParkingLotProfile?
@@ -328,9 +328,15 @@ struct TimerCellView: View {
         // 위젯 업데이트
         updateWidget()
         
-        // Live Activity 시작 (임시 주석)
-        /*
-        guard let parkingLot = currentParkingLot else { return }
+        // Live Activity 시작
+        guard let parkingLot = currentParkingLot else { 
+            print("주차장 정보가 없어서 Live Activity를 시작할 수 없습니다.")
+            return 
+        }
+        print("Live Activity 시작 시도...")
+        print("주차장: \(parkingLot.name)")
+        print("시작시간: \(parkingStartTime)")
+        print("현재요금: \(currentFee)")
         liveActivityController.start(
             startedAt: parkingStartTime,
             lotName: parkingLot.name,
@@ -339,7 +345,6 @@ struct TimerCellView: View {
             additionalMinutes: parkingLot.parkingFeeCalculator.additionalMinutes,
             currentFee: currentFee
         )
-        */
     }
     
     private func stopParking() {
@@ -347,8 +352,8 @@ struct TimerCellView: View {
         stopTimer()
         // 위젯 업데이트
         updateWidget()
-        // Live Activity 종료 (임시 주석)
-        // liveActivityController.end()
+        // Live Activity 종료
+        liveActivityController.end()
         // 여기서 주차 세션을 저장하는 로직 추가
     }
     
@@ -401,15 +406,13 @@ struct TimerCellView: View {
         // 위젯 업데이트
         updateWidget()
         
-        // Live Activity 업데이트 (임시 주석)
-        /*
+        // Live Activity 업데이트
         guard let parkingLot = currentParkingLot else { return }
         liveActivityController.update(
             currentFee: currentFee,
             startedAt: parkingStartTime,
             lotName: parkingLot.name
         )
-        */
     }
     
     // MARK: - 위젯 업데이트

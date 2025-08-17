@@ -7,11 +7,13 @@
 
 import WidgetKit
 import SwiftUI
+import ActivityKit
 
 @main
 struct ParkingWidgetsBundle: WidgetBundle {
     @WidgetBundleBuilder
     var body: some Widget {
         ParkingFeeWidget()           // 기존 잠금화면 위젯
+        ParkingLiveActivityWidget()  // Live Activity
     }
 }

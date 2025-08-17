@@ -9,14 +9,18 @@ import ActivityKit
 import Foundation
 import SwiftUI
 
-// 임시로 주석 처리
-/*
 final class ParkingLiveActivityController: ObservableObject {
     private var activity: Activity<ParkingLiveActivityAttributes>?
     
     func start(startedAt: Date, lotName: String, initialFee: Int, 
                additionalFee: Int, additionalMinutes: Int, currentFee: Int) {
-        guard ActivityAuthorizationInfo().areActivitiesEnabled else { return }
+        print("Live Activity 시작 시도...")
+        print("ActivityAuthorizationInfo().areActivitiesEnabled: \(ActivityAuthorizationInfo().areActivitiesEnabled)")
+        
+        guard ActivityAuthorizationInfo().areActivitiesEnabled else { 
+            print("Live Activities가 비활성화되어 있습니다.")
+            return 
+        }
         
         let attributes = ParkingLiveActivityAttributes(
             initialFee: initialFee,
@@ -35,6 +39,7 @@ final class ParkingLiveActivityController: ObservableObject {
                 contentState: content,
                 pushType: nil
             )
+            print("Live Activity 시작 성공!")
         } catch {
             print("Live Activity 시작 실패:", error)
         }
@@ -58,4 +63,3 @@ final class ParkingLiveActivityController: ObservableObject {
         self.activity = nil
     }
 }
-*/
