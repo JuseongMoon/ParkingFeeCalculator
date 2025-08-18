@@ -137,16 +137,11 @@ struct ParkingLotInfoView: View {
             .navigationTitle("주차장 정보")
             .navigationBarTitleDisplayMode(.large)
             .toolbar {
-                ToolbarItem(placement: .topBarLeading) {
+                ToolbarItem(placement: .topBarTrailing) {
                     if onUpdate != nil {
                         Button("수정") {
                             isPresentingEditForm = true
                         }
-                    }
-                }
-                ToolbarItem(placement: .topBarTrailing) {
-                    Button("닫기") {
-                        dismiss()
                     }
                 }
             }

@@ -407,11 +407,9 @@ struct TimerCellView: View {
         updateWidget()
         
         // Live Activity 업데이트
-        guard let parkingLot = currentParkingLot else { return }
         liveActivityController.update(
             currentFee: currentFee,
-            startedAt: parkingStartTime,
-            lotName: parkingLot.name
+            startedAt: parkingStartTime
         )
     }
     

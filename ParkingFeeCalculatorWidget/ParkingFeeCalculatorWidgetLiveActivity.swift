@@ -9,72 +9,70 @@ import ActivityKit
 import WidgetKit
 import SwiftUI
 
-struct ParkingFeeCalculatorWidgetAttributes: ActivityAttributes {
+// Live Activity Attributes 정의
+struct ParkingAttributes: ActivityAttributes {
     public struct ContentState: Codable, Hashable {
-        // Dynamic stateful properties about your activity go here!
-        var emoji: String
+        var currentFee: Int
+        var elapsedTime: TimeInterval
     }
-
-    // Fixed non-changing properties about your activity go here!
-    var name: String
+    
+    var parkingLotName: String
 }
 
 struct ParkingFeeCalculatorWidgetLiveActivity: Widget {
     var body: some WidgetConfiguration {
-        ActivityConfiguration(for: ParkingFeeCalculatorWidgetAttributes.self) { context in
-            // Lock screen/banner UI goes here
-            VStack {
-                Text("Hello \(context.state.emoji)")
+        ActivityConfiguration(for: ParkingAttributes.self) { context in
+            // Lock screen/banner UI
+            VStack(alignment: .leading, spacing: 8) {
+                Text("\(context.attributes.parkingLotName) 주차 중")
+                    .font(.headline)
+                
+                HStack {
+                    Text("경과 시간:")
+                    Text(Date(timeIntervalSinceNow: -context.state.elapsedTime), style: .timer)
+                }
+                
+                HStack {
+                    Text("현재 요금:")
+                    Text("\(context.state.currentFee)원")
+                        .font(.title.bold())
+                }
             }
-            .activityBackgroundTint(Color.cyan)
-            .activitySystemActionForegroundColor(Color.black)
+            .padding()
+            .activityBackgroundTint(Color.blue.opacity(0.3))
+            .activitySystemActionForegroundColor(Color.white)
 
         } dynamicIsland: { context in
             DynamicIsland {
-                // Expanded UI goes here.  Compose the expanded UI through
-                // various regions, like leading/trailing/center/bottom
                 DynamicIslandExpandedRegion(.leading) {
-                    Text("Leading")
+                    Text(context.attributes.parkingLotName)
+                        .font(.headline)
                 }
                 DynamicIslandExpandedRegion(.trailing) {
-                    Text("Trailing")
+                    Text("\(context.state.currentFee)원")
+                        .font(.headline)
                 }
                 DynamicIslandExpandedRegion(.bottom) {
-                    Text("Bottom \(context.state.emoji)")
-                    // more content
+                    HStack {
+                        Text("경과:")
+                        Text(Date(timeIntervalSinceNow: -context.state.elapsedTime), style: .timer)
+                    }
                 }
             } compactLeading: {
-                Text("L")
+                Image(systemName: "p.circle.fill")
             } compactTrailing: {
-                Text("T \(context.state.emoji)")
+                Text("\(context.state.currentFee)원")
             } minimal: {
-                Text(context.state.emoji)
+                Image(systemName: "p.circle.fill")
             }
-            .widgetURL(URL(string: "http://www.apple.com"))
-            .keylineTint(Color.red)
+            .keylineTint(Color.blue)
         }
     }
 }
 
-extension ParkingFeeCalculatorWidgetAttributes {
-    fileprivate static var preview: ParkingFeeCalculatorWidgetAttributes {
-        ParkingFeeCalculatorWidgetAttributes(name: "World")
-    }
-}
-
-extension ParkingFeeCalculatorWidgetAttributes.ContentState {
-    fileprivate static var smiley: ParkingFeeCalculatorWidgetAttributes.ContentState {
-        ParkingFeeCalculatorWidgetAttributes.ContentState(emoji: "😀")
-     }
-     
-     fileprivate static var starEyes: ParkingFeeCalculatorWidgetAttributes.ContentState {
-         ParkingFeeCalculatorWidgetAttributes.ContentState(emoji: "🤩")
-     }
-}
-
-#Preview("Notification", as: .content, using: ParkingFeeCalculatorWidgetAttributes.preview) {
+#Preview("Notification", as: .content, using: ParkingAttributes(parkingLotName: "테스트 주차장")) { 
    ParkingFeeCalculatorWidgetLiveActivity()
 } contentStates: {
-    ParkingFeeCalculatorWidgetAttributes.ContentState.smiley
-    ParkingFeeCalculatorWidgetAttributes.ContentState.starEyes
+    ParkingAttributes.ContentState(currentFee: 5000, elapsedTime: 3600)
+    ParkingAttributes.ContentState(currentFee: 10000, elapsedTime: 7200)
 }

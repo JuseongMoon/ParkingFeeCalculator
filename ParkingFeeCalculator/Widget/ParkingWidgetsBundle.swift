@@ -14,6 +14,6 @@ struct ParkingWidgetsBundle: WidgetBundle {
     @WidgetBundleBuilder
     var body: some Widget {
         ParkingFeeWidget()           // 기존 잠금화면 위젯
-        ParkingLiveActivityWidget()  // Live Activity
+        ParkingFeeCalculatorWidgetLiveActivity()  // Live Activity
     }
 }

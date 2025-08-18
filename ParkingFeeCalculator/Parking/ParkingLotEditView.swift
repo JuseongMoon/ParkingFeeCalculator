@@ -128,13 +128,13 @@ struct ParkingLotEditView: View {
                     
                     if hasInitialFee {
                         Stepper(value: $initialFee, in: 0...100_000, step: 100) { row("기본요금", suffix: "원", value: initialFee) }
-                        Stepper(value: $initialMinutes, in: 0...180, step: 5) { row("기본시간", suffix: "분", value: initialMinutes) }
+                        Stepper(value: $initialMinutes, in: 5...180, step: 5) { row("기본시간", suffix: "분", value: initialMinutes) }
                     }
                 }
                 
                 Section("추가 요금") {
                     Stepper(value: $additionalFee, in: 0...20_000, step: 50) { row("추가요금", suffix: "원", value: additionalFee) }
-                    Stepper(value: $additionalMinutes, in: 0...240, step: 5) { row("단위시간", suffix: "분", value: additionalMinutes) }
+                    Stepper(value: $additionalMinutes, in: 5...240, step: 5) { row("단위시간", suffix: "분", value: additionalMinutes) }
                 }
                 
                 Section("할인 및 제한") {
