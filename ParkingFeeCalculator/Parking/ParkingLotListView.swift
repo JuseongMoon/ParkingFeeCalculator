@@ -115,7 +115,7 @@ struct ParkingLotListView: View {
                     viewModel.addParkingLot(newParkingLot)
                 }
             }
-            .onChange(of: isParkingActive) { newValue in
+            .onChange(of: isParkingActive) { _, newValue in
                 if !newValue {
                     // 주차가 종료되면 현재 주차장 정보 초기화
                     currentParkingLot = nil

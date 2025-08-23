@@ -8,7 +8,7 @@
 import Foundation
 
 struct ParkingSession: Identifiable, Codable, Equatable, Hashable {
-    let id = UUID()
+    var id: UUID = UUID()
     var name: String
     var startedAt: Date
     var endedAt: Date?

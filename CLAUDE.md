@@ -72,14 +72,14 @@ ParkingFeeCalculator/
 ### Key Features
 - **Live Activities**: Real-time parking session tracking in Dynamic Island/Lock Screen
 - **Widgets**: Home screen widgets showing parking status
-- **App Groups**: Data sharing between main app and extensions via `group.com.parkingfeecalculator.widget`
+- **App Groups**: Data sharing between main app and extensions via `group.com.ScienceFiction.ParkingFeeCalculator`
 - **UserDefaults Suite**: Persistent data storage shared across app and extensions
 - **Complex Fee Calculation**: Multi-tier pricing with time periods, discounts, and special conditions
 
 ### Data Persistence
 ```swift
 // Access shared UserDefaults
-let sharedDefaults = UserDefaults(suiteName: "group.com.parkingfeecalculator.widget")
+let sharedDefaults = UserDefaults(suiteName: "group.com.ScienceFiction.ParkingFeeCalculator")
 
 // Key patterns used
 "parkingLots"           // Array of ParkingLotProfile

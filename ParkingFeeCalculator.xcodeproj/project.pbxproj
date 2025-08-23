@@ -38,6 +38,7 @@
 
 /* Begin PBXFileReference section */
 		63A24CDB2E4CCE0300CFA877 /* ParkingFeeCalculator.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = ParkingFeeCalculator.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		63B5F9D32E598EBD002A92E1 /* ParkingFeeCalculatorWidgetExtensionRelease.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = ParkingFeeCalculatorWidgetExtensionRelease.entitlements; sourceTree = "<group>"; };
 		63D4BD3D2E51F193009416F2 /* ParkingFeeCalculatorWidgetExtension.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = ParkingFeeCalculatorWidgetExtension.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		63D4BD3F2E51F193009416F2 /* WidgetKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = WidgetKit.framework; path = System/Library/Frameworks/WidgetKit.framework; sourceTree = SDKROOT; };
 		63D4BD412E51F193009416F2 /* SwiftUI.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SwiftUI.framework; path = System/Library/Frameworks/SwiftUI.framework; sourceTree = SDKROOT; };
@@ -125,6 +126,7 @@
 		63A24CD22E4CCE0300CFA877 = {
 			isa = PBXGroup;
 			children = (
+				63B5F9D32E598EBD002A92E1 /* ParkingFeeCalculatorWidgetExtensionRelease.entitlements */,
 				63D4BD602E51F29F009416F2 /* ParkingFeeCalculatorWidgetExtension.entitlements */,
 				63A24CDD2E4CCE0300CFA877 /* ParkingFeeCalculator */,
 				63D4BD432E51F193009416F2 /* ParkingFeeCalculatorWidget */,
@@ -483,7 +485,7 @@
 				ASSETCATALOG_COMPILER_WIDGET_BACKGROUND_COLOR_NAME = WidgetBackground;
 				CODE_SIGN_ENTITLEMENTS = ParkingFeeCalculatorWidgetExtension.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 8;
 				DEVELOPMENT_TEAM = 4823B5JB69;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = ParkingFeeCalculatorWidget/Info.plist;
@@ -496,7 +498,7 @@
 					"@executable_path/Frameworks",
 					"@executable_path/../../Frameworks",
 				);
-				MARKETING_VERSION = 1.0;
+				MARKETING_VERSION = 1.0.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.ScienceFiction.ParkingFeeCalculator.ParkingFeeCalculatorWidget;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
@@ -514,9 +516,9 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				ASSETCATALOG_COMPILER_WIDGET_BACKGROUND_COLOR_NAME = WidgetBackground;
-				CODE_SIGN_ENTITLEMENTS = ParkingFeeCalculatorWidgetExtension.entitlements;
+				CODE_SIGN_ENTITLEMENTS = ParkingFeeCalculatorWidgetExtensionRelease.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 8;
 				DEVELOPMENT_TEAM = 4823B5JB69;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = ParkingFeeCalculatorWidget/Info.plist;
@@ -529,7 +531,7 @@
 					"@executable_path/Frameworks",
 					"@executable_path/../../Frameworks",
 				);
-				MARKETING_VERSION = 1.0;
+				MARKETING_VERSION = 1.0.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.ScienceFiction.ParkingFeeCalculator.ParkingFeeCalculatorWidget;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;

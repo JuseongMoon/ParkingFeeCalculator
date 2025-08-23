@@ -173,7 +173,7 @@ struct ParkingLotEditView: View {
                 
                 Section("특별 조건 할인") {
                     discountToggle("경증 장애인 할인", isOn: $hasMildDiscount, isApplicable: userProfileVM.driverProfile.isDisabled && userProfileVM.driverProfile.disabilityLevel == .mild)
-                        .onChange(of: hasMildDiscount) { newValue in
+                        .onChange(of: hasMildDiscount) { _, newValue in
                             if newValue && mildDiscountPercentage == 0 {
                                 mildDiscountPercentage = 80
                             }
@@ -185,7 +185,7 @@ struct ParkingLotEditView: View {
                     }
                     
                     discountToggle("중증 장애인 할인", isOn: $hasSevereDiscount, isApplicable: userProfileVM.driverProfile.isDisabled && userProfileVM.driverProfile.disabilityLevel == .severe)
-                        .onChange(of: hasSevereDiscount) { newValue in
+                        .onChange(of: hasSevereDiscount) { _, newValue in
                             if newValue && severeDiscountPercentage == 0 {
                                 severeDiscountPercentage = 80
                             }
@@ -197,7 +197,7 @@ struct ParkingLotEditView: View {
                     }
                     
                     discountToggle("국가유공자 할인", isOn: $hasNationalMeritDiscount, isApplicable: userProfileVM.driverProfile.isNationalMerit)
-                        .onChange(of: hasNationalMeritDiscount) { newValue in
+                        .onChange(of: hasNationalMeritDiscount) { _, newValue in
                             if newValue && nationalMeritDiscountPercentage == 0 {
                                 nationalMeritDiscountPercentage = 80
                             }
@@ -209,7 +209,7 @@ struct ParkingLotEditView: View {
                     }
                     
                     discountToggle("모범납세자 할인", isOn: $hasExemplaryTaxpayerDiscount, isApplicable: userProfileVM.driverProfile.isExemplaryTaxpayer)
-                        .onChange(of: hasExemplaryTaxpayerDiscount) { newValue in
+                        .onChange(of: hasExemplaryTaxpayerDiscount) { _, newValue in
                             if newValue && exemplaryTaxpayerDiscountPercentage == 0 {
                                 exemplaryTaxpayerDiscountPercentage = 100
                             }
@@ -221,7 +221,7 @@ struct ParkingLotEditView: View {
                     }
                     
                     discountToggle("다자녀 할인", isOn: $hasMultiChildDiscount, isApplicable: userProfileVM.driverProfile.isMultiChild)
-                        .onChange(of: hasMultiChildDiscount) { newValue in
+                        .onChange(of: hasMultiChildDiscount) { _, newValue in
                             if newValue && multiChildDiscountPercentage == 0 {
                                 multiChildDiscountPercentage = 50
                             }
@@ -233,7 +233,7 @@ struct ParkingLotEditView: View {
                     }
                     
                     discountToggle("고령자 할인", isOn: $hasSeniorDiscount, isApplicable: userProfileVM.driverProfile.isSenior)
-                        .onChange(of: hasSeniorDiscount) { newValue in
+                        .onChange(of: hasSeniorDiscount) { _, newValue in
                             if newValue && seniorDiscountPercentage == 0 {
                                 seniorDiscountPercentage = 50
                             }
@@ -247,7 +247,7 @@ struct ParkingLotEditView: View {
                 
                 Section("차량 크기별 할인") {
                     discountToggle("경차 할인", isOn: $hasLightCarDiscount, isApplicable: userProfileVM.vehicleProfile.vehicleSize == .light)
-                        .onChange(of: hasLightCarDiscount) { newValue in
+                        .onChange(of: hasLightCarDiscount) { _, newValue in
                             if newValue && lightCarDiscountPercentage == 0 {
                                 lightCarDiscountPercentage = 50
                             }
@@ -259,7 +259,7 @@ struct ParkingLotEditView: View {
                     }
                     
                     discountToggle("대형차 할증", isOn: $hasLargeCarDiscount, isApplicable: userProfileVM.vehicleProfile.vehicleSize == .large)
-                        .onChange(of: hasLargeCarDiscount) { newValue in
+                        .onChange(of: hasLargeCarDiscount) { _, newValue in
                             if newValue && largeCarDiscountPercentage == 0 {
                                 largeCarDiscountPercentage = 0
                             }
@@ -273,7 +273,7 @@ struct ParkingLotEditView: View {
                 
                 Section("친환경 차량 할인") {
                     discountToggle("전기차 할인", isOn: $hasElectricDiscount, isApplicable: userProfileVM.vehicleProfile.isElectric)
-                        .onChange(of: hasElectricDiscount) { newValue in
+                        .onChange(of: hasElectricDiscount) { _, newValue in
                             if newValue && electricDiscountPercentage == 0 {
                                 electricDiscountPercentage = 50
                             }
@@ -285,7 +285,7 @@ struct ParkingLotEditView: View {
                     }
                     
                     discountToggle("수소차 할인", isOn: $hasHydrogenDiscount, isApplicable: userProfileVM.vehicleProfile.isHydrogen)
-                        .onChange(of: hasHydrogenDiscount) { newValue in
+                        .onChange(of: hasHydrogenDiscount) { _, newValue in
                             if newValue && hydrogenDiscountPercentage == 0 {
                                 hydrogenDiscountPercentage = 50
                             }
@@ -297,7 +297,7 @@ struct ParkingLotEditView: View {
                     }
                     
                     discountToggle("하이브리드 차량 할인", isOn: $hasHybridDiscount, isApplicable: userProfileVM.vehicleProfile.isHybrid)
-                        .onChange(of: hasHybridDiscount) { newValue in
+                        .onChange(of: hasHybridDiscount) { _, newValue in
                             if newValue && hybridDiscountPercentage == 0 {
                                 hybridDiscountPercentage = 50
                             }

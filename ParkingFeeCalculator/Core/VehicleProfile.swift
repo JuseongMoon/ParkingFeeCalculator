@@ -8,7 +8,7 @@
 import Foundation
 
 struct VehicleProfile: Codable, Identifiable {
-    let id = UUID()
+    var id: UUID = UUID()
     var vehicleSize: VehicleSize
     var isElectric: Bool
     var isHydrogen: Bool

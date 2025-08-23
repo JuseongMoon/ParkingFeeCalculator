@@ -8,7 +8,7 @@
 import Foundation
 
 struct ParkingFeeCalculator: Codable, Identifiable {
-    let id = UUID()
+    var id: UUID = UUID()
     var initialFee: Int
     var initialMinutes: Int
     var additionalFee: Int

@@ -268,13 +268,13 @@ struct TimerCellView: View {
         .onDisappear {
             stopTimer()
         }
-        .onChange(of: isParkingActive) { newValue in
+        .onChange(of: isParkingActive) { _, newValue in
             if newValue {
                 startParking()
             }
         }
         // MARK: - 테스트용 시간 오프셋 변경 감지 (출시 시 제거 예정)
-        .onChange(of: testTimeOffset) { newValue in
+        .onChange(of: testTimeOffset) { _, newValue in
             if isParkingActive {
                 // 테스트용 시간 오프셋이 변경되면 즉시 주차비 재계산
                 calculateCurrentFee()
@@ -418,7 +418,7 @@ struct TimerCellView: View {
         guard let parkingLot = currentParkingLot else { return }
         
         // UserDefaults를 통한 직접 데이터 공유
-        let userDefaults = UserDefaults(suiteName: "group.com.parkingfeecalculator.widget")
+        let userDefaults = UserDefaults(suiteName: "group.com.ScienceFiction.ParkingFeeCalculator")
         
         // SharedParkingData와 동일한 구조로 데이터 생성
         let parkingData: [String: Any] = [

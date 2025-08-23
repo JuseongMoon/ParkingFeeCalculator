@@ -8,7 +8,7 @@
 import Foundation
 
 struct DriverProfile: Codable, Identifiable {
-    let id = UUID()
+    var id: UUID = UUID()
     var isDisabled: Bool
     var disabilityLevel: DisabilityLevel?
     var isNationalMerit: Bool

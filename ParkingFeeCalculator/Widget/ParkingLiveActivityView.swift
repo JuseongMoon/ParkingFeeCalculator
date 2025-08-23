@@ -10,6 +10,29 @@ import ActivityKit
 import Foundation
 import WidgetKit
 
+// MARK: - Time Formatting Extension
+extension ParkingLiveActivityLockView {
+    static func formatElapsedTime(_ startDate: Date) -> String {
+        let now = Date()
+        let elapsed = now.timeIntervalSince(startDate)
+        let minutes = Int(elapsed / 60)
+        
+        if minutes < 1 {
+            return "1분 미만"
+        } else if minutes < 60 {
+            return "\(minutes)분"
+        } else {
+            let hours = minutes / 60
+            let remainingMinutes = minutes % 60
+            if remainingMinutes == 0 {
+                return "\(hours)시간"
+            } else {
+                return "\(hours)시간 \(remainingMinutes)분"
+            }
+        }
+    }
+}
+
 struct ParkingLiveActivityLockView: View {
     let context: ActivityViewContext<ParkingLiveActivityAttributes>
     
@@ -23,7 +46,7 @@ struct ParkingLiveActivityLockView: View {
             Spacer()
             VStack(alignment: .trailing, spacing: 2) {
                 Text(context.state.parkingLotName).font(.caption2)
-                Text(context.state.startedAt, style: .timer)
+                Text(ParkingLiveActivityLockView.formatElapsedTime(context.state.startedAt))
                     .font(.caption2).monospacedDigit()
             }
         }
@@ -44,7 +67,7 @@ struct ParkingLiveActivityWidget: Widget {
                         .monospacedDigit()
                 }
                 DynamicIslandExpandedRegion(.trailing) {
-                    Text(context.state.startedAt, style: .timer)
+                    Text(ParkingLiveActivityLockView.formatElapsedTime(context.state.startedAt))
                         .monospacedDigit()
                 }
                 DynamicIslandExpandedRegion(.center) {

@@ -16,6 +16,7 @@ class ParkingLotViewModel: ObservableObject {
     @Published var errorMessage: String?
     
     private var cancellables = Set<AnyCancellable>()
+    private let sharedUserDefaults = UserDefaults(suiteName: "group.com.ScienceFiction.ParkingFeeCalculator")
     
     init() {
         loadParkingLots()
@@ -26,7 +27,13 @@ class ParkingLotViewModel: ObservableObject {
         isLoading = true
         
         // UserDefaults에서 저장된 주차장 데이터 로드
-        if let data = UserDefaults.standard.data(forKey: "savedParkingLots"),
+        guard let userDefaults = sharedUserDefaults else {
+            print("⚠️ App Group UserDefaults를 사용할 수 없습니다. 일반 UserDefaults로 대체합니다.")
+            loadFromStandardUserDefaults()
+            return
+        }
+        
+        if let data = userDefaults.data(forKey: "savedParkingLots"),
            let savedParkingLots = try? JSONDecoder().decode([ParkingLotProfile].self, from: data) {
             self.parkingLots = savedParkingLots
         } else {
@@ -80,6 +87,29 @@ class ParkingLotViewModel: ObservableObject {
     
     // MARK: - Data Persistence
     private func saveParkingLots() {
+        guard let userDefaults = sharedUserDefaults else {
+            print("⚠️ App Group UserDefaults를 사용할 수 없습니다. 일반 UserDefaults로 저장합니다.")
+            saveToStandardUserDefaults()
+            return
+        }
+        
+        if let data = try? JSONEncoder().encode(parkingLots) {
+            userDefaults.set(data, forKey: "savedParkingLots")
+            print("✅ 주차장 데이터가 App Group에 저장되었습니다.")
+        }
+    }
+    
+    // MARK: - Fallback Methods
+    private func loadFromStandardUserDefaults() {
+        if let data = UserDefaults.standard.data(forKey: "savedParkingLots"),
+           let savedParkingLots = try? JSONDecoder().decode([ParkingLotProfile].self, from: data) {
+            self.parkingLots = savedParkingLots
+        } else {
+            self.parkingLots = []
+        }
+    }
+    
+    private func saveToStandardUserDefaults() {
         if let data = try? JSONEncoder().encode(parkingLots) {
             UserDefaults.standard.set(data, forKey: "savedParkingLots")
         }

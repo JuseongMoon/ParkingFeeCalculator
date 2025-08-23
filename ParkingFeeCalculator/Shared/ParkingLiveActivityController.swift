@@ -53,13 +53,13 @@ final class ParkingLiveActivityController: ObservableObject {
             currentFee: currentFee,
             elapsedTime: Date().timeIntervalSince(startedAt)
         )
-        Task { await activity.update(using: content) }
+        Task { await activity.update(.init(state: content, staleDate: nil)) }
     }
     
     func end() {
         guard let activity else { return }
         Task {
-            await activity.end(dismissalPolicy: .immediate)
+            await activity.end(nil, dismissalPolicy: .immediate)
         }
         self.activity = nil
     }
