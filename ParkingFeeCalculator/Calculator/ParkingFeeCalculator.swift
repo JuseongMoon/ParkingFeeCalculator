@@ -7,6 +7,20 @@
 
 import Foundation
 
+// 시간 구간별 차등 요금 구조체
+struct TimeBasedPricingTier: Codable, Identifiable {
+    var id: UUID = UUID()
+    var thresholdMinutes: Int  // 기준 시간 (분)
+    var feePerUnit: Int        // 단위당 요금
+    var unitMinutes: Int       // 단위 시간 (분)
+    
+    init(thresholdMinutes: Int, feePerUnit: Int, unitMinutes: Int) {
+        self.thresholdMinutes = thresholdMinutes
+        self.feePerUnit = feePerUnit
+        self.unitMinutes = unitMinutes
+    }
+}
+
 struct ParkingFeeCalculator: Codable, Identifiable {
     var id: UUID = UUID()
     var initialFee: Int
@@ -19,6 +33,8 @@ struct ParkingFeeCalculator: Codable, Identifiable {
     var nightFlatFee: Int?
     var nightStartHour: Int?
     var nightEndHour: Int?
+    var useTimeBasedPricing: Bool
+    var pricingTiers: [TimeBasedPricingTier]
     var createdAt: Date
     var updatedAt: Date
     
@@ -32,7 +48,9 @@ struct ParkingFeeCalculator: Codable, Identifiable {
         dailyMaxFee: Int? = nil,
         nightFlatFee: Int? = nil,
         nightStartHour: Int? = nil,
-        nightEndHour: Int? = nil
+        nightEndHour: Int? = nil,
+        useTimeBasedPricing: Bool = false,
+        pricingTiers: [TimeBasedPricingTier] = []
     ) {
         self.initialFee = initialFee
         self.initialMinutes = initialMinutes
@@ -44,6 +62,8 @@ struct ParkingFeeCalculator: Codable, Identifiable {
         self.nightFlatFee = nightFlatFee
         self.nightStartHour = nightStartHour
         self.nightEndHour = nightEndHour
+        self.useTimeBasedPricing = useTimeBasedPricing
+        self.pricingTiers = pricingTiers
         self.createdAt = Date()
         self.updatedAt = Date()
     }
@@ -167,6 +187,79 @@ extension ParkingFeeCalculator {
         let chargeableDuration = duration - TimeInterval(totalFreeMinutes * 60)
         let chargeableMinutes = Int(ceil(chargeableDuration / 60))
         
+        // 시간 구간별 요금 계산
+        if useTimeBasedPricing && !pricingTiers.isEmpty {
+            return calculateTimeBasedFee(chargeableMinutes: chargeableMinutes)
+        }
+        
+        // 기존 단일 요금 체계 계산
+        return calculateSimpleFee(chargeableMinutes: chargeableMinutes)
+    }
+    
+    /// 시간 구간별 차등 요금 계산
+    private func calculateTimeBasedFee(chargeableMinutes: Int) -> Int {
+        var totalFee = 0
+        var remainingMinutes = chargeableMinutes
+        
+        // 초기 요금 처리
+        if remainingMinutes > 0 {
+            let initialUnits = min(remainingMinutes, initialMinutes)
+            if initialUnits > 0 {
+                totalFee = initialFee
+                remainingMinutes -= initialMinutes
+            }
+        }
+        
+        if remainingMinutes <= 0 {
+            return totalFee
+        }
+        
+        // 구간별로 정렬된 pricing tiers 적용
+        let sortedTiers = pricingTiers.sorted { $0.thresholdMinutes < $1.thresholdMinutes }
+        var currentThreshold = initialMinutes
+        
+        for tier in sortedTiers {
+            if remainingMinutes <= 0 { break }
+            
+            // 현재 구간에서 처리할 시간 계산
+            let minutesToProcess: Int
+            if currentThreshold < tier.thresholdMinutes {
+                // 현재 threshold부터 다음 tier threshold까지는 기본 추가요금으로 계산
+                minutesToProcess = min(remainingMinutes, tier.thresholdMinutes - currentThreshold)
+                if minutesToProcess > 0 {
+                    let units = Int(ceil(Double(minutesToProcess) / Double(additionalMinutes)))
+                    totalFee += units * additionalFee
+                    remainingMinutes -= minutesToProcess
+                }
+                currentThreshold = tier.thresholdMinutes
+            }
+            
+            // tier threshold 이후는 해당 tier의 요금으로 계산
+            if remainingMinutes > 0 {
+                // 다음 tier가 있다면 그 threshold까지, 없다면 모든 남은 시간
+                let nextThreshold = sortedTiers.first(where: { $0.thresholdMinutes > tier.thresholdMinutes })?.thresholdMinutes ?? Int.max
+                let tierMinutes = min(remainingMinutes, nextThreshold - tier.thresholdMinutes)
+                
+                if tierMinutes > 0 {
+                    let units = Int(ceil(Double(tierMinutes) / Double(tier.unitMinutes)))
+                    totalFee += units * tier.feePerUnit
+                    remainingMinutes -= tierMinutes
+                    currentThreshold = tier.thresholdMinutes + tierMinutes
+                }
+            }
+        }
+        
+        // 마지막 tier 이후 남은 시간이 있다면 마지막 tier 요금으로 계산
+        if remainingMinutes > 0, let lastTier = sortedTiers.last {
+            let units = Int(ceil(Double(remainingMinutes) / Double(lastTier.unitMinutes)))
+            totalFee += units * lastTier.feePerUnit
+        }
+        
+        return totalFee
+    }
+    
+    /// 기존 단일 요금 체계 계산
+    private func calculateSimpleFee(chargeableMinutes: Int) -> Int {
         if chargeableMinutes <= initialMinutes {
             return initialFee
         }

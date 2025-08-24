@@ -54,6 +54,10 @@ struct ParkingLotEditView: View {
     @State private var hydrogenDiscountPercentage: Double = ParkingLotDefaults.hydrogenDiscountPercentage
     @State private var hasHybridDiscount: Bool = false
     @State private var hybridDiscountPercentage: Double = ParkingLotDefaults.hybridDiscountPercentage
+    
+    // 시간 구간별 요금 설정
+    @State private var useTimeBasedPricing: Bool = false
+    @State private var pricingTiers: [TimeBasedPricingTier] = []
 
     let parkingLotProfile: ParkingLotProfile?
     let onSave: (ParkingLotProfile) -> Void
@@ -112,6 +116,10 @@ struct ParkingLotEditView: View {
             _hydrogenDiscountPercentage = State(initialValue: discounts.hydrogenDiscountPercentage ?? 0)
             _hasHybridDiscount = State(initialValue: discounts.hybridDiscountPercentage != nil)
             _hybridDiscountPercentage = State(initialValue: discounts.hybridDiscountPercentage ?? 0)
+            
+            // 시간 구간별 요금 설정 로드
+            _useTimeBasedPricing = State(initialValue: profile.parkingFeeCalculator.useTimeBasedPricing)
+            _pricingTiers = State(initialValue: profile.parkingFeeCalculator.pricingTiers)
         }
     }
 
@@ -133,8 +141,67 @@ struct ParkingLotEditView: View {
                 }
                 
                 Section("추가 요금") {
-                    Stepper(value: $additionalFee, in: 0...20_000, step: 50) { row("추가요금", suffix: "원", value: additionalFee) }
+                    Stepper(value: $additionalFee, in: 0...20_000, step: 50) { row("단위요금", suffix: "원", value: additionalFee) }
                     Stepper(value: $additionalMinutes, in: 5...240, step: 5) { row("단위시간", suffix: "분", value: additionalMinutes) }
+                }
+                
+                Section {
+                    Toggle("추가시간별 요금 활성화", isOn: $useTimeBasedPricing)
+                        .onChange(of: useTimeBasedPricing) { _, newValue in
+                            if newValue && pricingTiers.isEmpty {
+                                addPricingTier()
+                            }
+                        }
+                    
+                    if useTimeBasedPricing {
+                        ForEach(pricingTiers.indices, id: \.self) { index in
+                            VStack(alignment: .leading, spacing: 8) {
+                                Text("구간 \(index + 1)")
+                                    .font(.title3)
+                                    .foregroundColor(.primary)
+                                
+                                Stepper(value: $pricingTiers[index].thresholdMinutes, in: getMinThreshold(for: index)...getMaxThreshold(for: index), step: 30) {
+                                    HStack {
+                                        Text("\(formatTimeDisplay(pricingTiers[index].thresholdMinutes))이후 부터")
+                                        Spacer()
+                                        Text("\(pricingTiers[index].thresholdMinutes)분")
+                                            .foregroundColor(.secondary)
+                                    }
+                                }
+                                
+                                Stepper(value: $pricingTiers[index].feePerUnit, in: 0...50_000, step: 50) {
+                                    row("단위요금", suffix: "원", value: pricingTiers[index].feePerUnit)
+                                }
+                                
+                                Stepper(value: $pricingTiers[index].unitMinutes, in: 5...60, step: 5) {
+                                    row("단위시간", suffix: "분", value: pricingTiers[index].unitMinutes)
+                                }
+                                
+                            }
+                            .padding(.vertical, 4)
+                        }
+                        
+                        HStack {
+                            Button(action: addPricingTier) {
+                                Text("구간 추가")
+                                    .foregroundColor(.blue)
+                            }
+                            .buttonStyle(PlainButtonStyle())
+                            
+                            Spacer()
+                            
+                            if pricingTiers.count > 1 {
+                                Button(action: removePricingTier) {
+                                    Text("구간 삭제")
+                                        .foregroundColor(.red)
+                                }
+                                .buttonStyle(PlainButtonStyle())
+                            }
+                        }
+                        .padding(.top, 4)
+                        .padding(.bottom, 4)
+
+                    }
                 }
                 
                 Section("할인 및 제한") {
@@ -333,7 +400,9 @@ struct ParkingLotEditView: View {
             dailyMaxFee: hasDailyMaxFee ? dailyMaxFee : nil,
             nightFlatFee: hasNightRate ? (nightFlatFee == 0 ? nil : nightFlatFee) : nil,
             nightStartHour: hasNightRate ? nightStartHour : nil,
-            nightEndHour: hasNightRate ? nightEndHour : nil
+            nightEndHour: hasNightRate ? nightEndHour : nil,
+            useTimeBasedPricing: useTimeBasedPricing,
+            pricingTiers: useTimeBasedPricing ? pricingTiers : []
         )
 
         let specialConditionDiscounts = SpecialConditionDiscounts(
@@ -399,6 +468,55 @@ struct ParkingLotEditView: View {
                         .font(.title3)
                 }
             }
+        }
+    }
+    
+    private func addPricingTier() {
+        let newThreshold: Int
+        if pricingTiers.isEmpty {
+            newThreshold = max(120, initialMinutes + 60)
+        } else {
+            newThreshold = pricingTiers.last!.thresholdMinutes + 60
+        }
+        
+        let newTier = TimeBasedPricingTier(
+            thresholdMinutes: newThreshold,
+            feePerUnit: additionalFee,
+            unitMinutes: additionalMinutes
+        )
+        pricingTiers.append(newTier)
+    }
+    
+    private func removePricingTier() {
+        if pricingTiers.count > 1 {
+            pricingTiers.removeLast()
+        }
+    }
+    
+    private func getMinThreshold(for index: Int) -> Int {
+        if index == 0 {
+            return max(30, initialMinutes + 30)
+        } else {
+            return pricingTiers[index - 1].thresholdMinutes + 30
+        }
+    }
+    
+    private func getMaxThreshold(for index: Int) -> Int {
+        if index == pricingTiers.count - 1 {
+            return 1440  // 24시간 최대값
+        } else {
+            return pricingTiers[index + 1].thresholdMinutes - 30
+        }
+    }
+    
+    private func formatTimeDisplay(_ minutes: Int) -> String {
+        let hours = minutes / 60
+        let remainingMinutes = minutes % 60
+        
+        if remainingMinutes == 0 {
+            return "\(hours)시간"
+        } else {
+            return "\(hours)시간 \(remainingMinutes)분"
         }
     }
 }
