@@ -372,7 +372,8 @@ struct TimerCellView: View {
             additionalFee: parkingLot.parkingFeeCalculator.additionalFee,
             additionalMinutes: parkingLot.parkingFeeCalculator.additionalMinutes,
             currentFee: currentFee,
-            additionalFreeMinutes: additionalFreeMinutes
+            additionalFreeMinutes: additionalFreeMinutes,
+            discountInfo: getDiscountInfo()
         )
     }
     
@@ -440,7 +441,8 @@ struct TimerCellView: View {
         liveActivityController.update(
             currentFee: currentFee,
             startedAt: parkingStartTime,
-            additionalFreeMinutes: additionalFreeMinutes
+            additionalFreeMinutes: additionalFreeMinutes,
+            discountInfo: getDiscountInfo()
         )
     }
     
