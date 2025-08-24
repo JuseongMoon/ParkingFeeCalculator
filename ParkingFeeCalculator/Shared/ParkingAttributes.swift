@@ -14,6 +14,7 @@ struct ParkingAttributes: ActivityAttributes {
     public struct ContentState: Codable, Hashable {
         var currentFee: Int
         var elapsedTime: TimeInterval
+        var additionalFreeMinutes: Int = 0
     }
     
     var parkingLotName: String

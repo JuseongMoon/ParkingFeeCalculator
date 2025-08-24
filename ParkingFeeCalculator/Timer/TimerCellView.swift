@@ -16,6 +16,7 @@ struct TimerCellView: View {
     @State private var displayTimer: Timer? // 경과 시간 표시용 타이머 (1초마다)
     @State private var feeCalculationTimer: Timer? // 주차비 계산용 타이머 (1분마다)
     @State private var showingStopConfirmation = false
+    @State private var additionalFreeMinutes: Int = 0
     @StateObject private var liveActivityController = ParkingLiveActivityController()
     
     // 실제 주차장 정보 (외부에서 주입받음)
@@ -132,6 +133,33 @@ struct TimerCellView: View {
                                             .font(.caption2)
                                     }
                                 }
+                            }
+                            
+                            // 추가 무료시간 Stepper
+                            VStack(spacing: 8) {
+                                HStack {
+                                    Text("추가 무료시간")
+                                        .font(.caption)
+                                        .foregroundColor(.secondary)
+                                    
+                                    Spacer()
+                                    
+                                    Text("\(additionalFreeMinutes)분")
+                                        .font(.caption)
+                                        .foregroundColor(.blue)
+                                        .fontWeight(.medium)
+                                    Stepper(
+                                        value: $additionalFreeMinutes,
+                                        in: 0...300,
+                                        step: 30
+                                    ) {
+                                        EmptyView()
+                                    }
+                                    .onChange(of: additionalFreeMinutes) { _, _ in
+                                        calculateCurrentFee()
+                                    }
+                                }
+                                
                             }
                         }
                         .padding(.horizontal, 16)
@@ -343,7 +371,8 @@ struct TimerCellView: View {
             initialFee: parkingLot.parkingFeeCalculator.initialFee,
             additionalFee: parkingLot.parkingFeeCalculator.additionalFee,
             additionalMinutes: parkingLot.parkingFeeCalculator.additionalMinutes,
-            currentFee: currentFee
+            currentFee: currentFee,
+            additionalFreeMinutes: additionalFreeMinutes
         )
     }
     
@@ -392,13 +421,14 @@ struct TimerCellView: View {
         // 시간 계산 로직 수정: testTimeOffset 중복 적용 제거
         let elapsed = currentTime.timeIntervalSince(parkingStartTime) + testTimeOffset
         
-        // 새로운 통합 계산 메서드 사용
+        // 새로운 통합 계산 메서드 사용 (추가 무료시간 포함)
         let result = parkingLot.parkingFeeCalculator.calculateFee(
             duration: elapsed,
             vehicleProfile: currentVehicle,
             driverProfile: userProfileVM.driverProfile,
             specialConditionDiscounts: parkingLot.specialConditionDiscounts,
-            startTime: parkingStartTime
+            startTime: parkingStartTime,
+            additionalFreeMinutes: additionalFreeMinutes
         )
         
         currentFee = result.finalFee
@@ -409,7 +439,8 @@ struct TimerCellView: View {
         // Live Activity 업데이트
         liveActivityController.update(
             currentFee: currentFee,
-            startedAt: parkingStartTime
+            startedAt: parkingStartTime,
+            additionalFreeMinutes: additionalFreeMinutes
         )
     }
     
@@ -425,7 +456,8 @@ struct TimerCellView: View {
             "isParkingActive": isParkingActive,
             "currentFee": currentFee,
             "parkingStartTime": parkingStartTime.timeIntervalSince1970,
-            "parkingLotName": parkingLot.name
+            "parkingLotName": parkingLot.name,
+            "additionalFreeMinutes": additionalFreeMinutes
         ]
         
         if let data = try? JSONSerialization.data(withJSONObject: parkingData) {

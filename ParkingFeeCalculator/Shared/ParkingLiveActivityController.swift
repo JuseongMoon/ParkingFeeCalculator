@@ -13,7 +13,8 @@ final class ParkingLiveActivityController: ObservableObject {
     private var activity: Activity<ParkingAttributes>?
     
     func start(startedAt: Date, lotName: String, initialFee: Int, 
-               additionalFee: Int, additionalMinutes: Int, currentFee: Int) {
+               additionalFee: Int, additionalMinutes: Int, currentFee: Int, 
+               additionalFreeMinutes: Int = 0) {
         print("=== Live Activity 시작 시도 ===")
         print("ActivityAuthorizationInfo().areActivitiesEnabled: \(ActivityAuthorizationInfo().areActivitiesEnabled)")
         print("ActivityAuthorizationInfo().frequentPushesEnabled: \(ActivityAuthorizationInfo().frequentPushesEnabled)")
@@ -26,7 +27,8 @@ final class ParkingLiveActivityController: ObservableObject {
         let attributes = ParkingAttributes(parkingLotName: lotName)
         let content = ParkingAttributes.ContentState(
             currentFee: currentFee,
-            elapsedTime: Date().timeIntervalSince(startedAt)
+            elapsedTime: Date().timeIntervalSince(startedAt),
+            additionalFreeMinutes: additionalFreeMinutes
         )
         
         do {
@@ -47,11 +49,12 @@ final class ParkingLiveActivityController: ObservableObject {
         }
     }
     
-    func update(currentFee: Int, startedAt: Date) {
+    func update(currentFee: Int, startedAt: Date, additionalFreeMinutes: Int = 0) {
         guard let activity else { return }
         let content = ParkingAttributes.ContentState(
             currentFee: currentFee,
-            elapsedTime: Date().timeIntervalSince(startedAt)
+            elapsedTime: Date().timeIntervalSince(startedAt),
+            additionalFreeMinutes: additionalFreeMinutes
         )
         Task { await activity.update(.init(state: content, staleDate: nil)) }
     }

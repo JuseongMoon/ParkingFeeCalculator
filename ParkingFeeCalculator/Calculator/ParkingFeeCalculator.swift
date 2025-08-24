@@ -93,16 +93,18 @@ extension ParkingFeeCalculator {
     ///   - driverProfile: 운전자 프로필
     ///   - specialConditionDiscounts: 특별 조건 할인 정보
     ///   - startTime: 주차 시작 시간 (기본값: 현재 시간)
+    ///   - additionalFreeMinutes: 추가 무료시간 (분, 기본값: 0)
     /// - Returns: 계산된 주차비 결과
     func calculateFee(
         duration: TimeInterval,
         vehicleProfile: VehicleProfile,
         driverProfile: DriverProfile,
         specialConditionDiscounts: SpecialConditionDiscounts,
-        startTime: Date = Date()
+        startTime: Date = Date(),
+        additionalFreeMinutes: Int = 0
     ) -> ParkingFeeResult {
-        // 기본 주차비 계산
-        let baseFee = calculateBaseFee(duration: duration)
+        // 기본 주차비 계산 (추가 무료시간 반영)
+        let baseFee = calculateBaseFee(duration: duration, additionalFreeMinutes: additionalFreeMinutes)
         
         var totalFee = baseFee
         
@@ -147,9 +149,12 @@ extension ParkingFeeCalculator {
     }
     
     /// 기본 주차비를 계산합니다 (차량 크기 배수와 할인 제외)
-    private func calculateBaseFee(duration: TimeInterval) -> Int {
+    private func calculateBaseFee(duration: TimeInterval, additionalFreeMinutes: Int = 0) -> Int {
+        // 총 무료 시간 계산
+        let totalFreeMinutes = freeMinutes + additionalFreeMinutes
+        
         // 무료 시간 체크
-        if duration <= TimeInterval(freeMinutes * 60) {
+        if duration <= TimeInterval(totalFreeMinutes * 60) {
             return 0
         }
         
@@ -159,7 +164,7 @@ extension ParkingFeeCalculator {
         }
         
         // 기본 시간 이후 계산
-        let chargeableDuration = duration - TimeInterval(freeMinutes * 60)
+        let chargeableDuration = duration - TimeInterval(totalFreeMinutes * 60)
         let chargeableMinutes = Int(ceil(chargeableDuration / 60))
         
         if chargeableMinutes <= initialMinutes {

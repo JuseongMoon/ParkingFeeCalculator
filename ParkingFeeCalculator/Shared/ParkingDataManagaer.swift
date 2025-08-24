@@ -57,7 +57,7 @@ class ParkingDataManager {
     }
     
     // 주차 상태 업데이트 (메인 앱용)
-    func updateParkingStatus(isActive: Bool, fee: Int, startTime: Date, lotName: String) {
+    func updateParkingStatus(isActive: Bool, fee: Int, startTime: Date, lotName: String, additionalFreeMinutes: Int = 0) {
         guard let userDefaults = userDefaults else {
             print("⚠️ App Group UserDefaults를 사용할 수 없습니다.")
             return
@@ -67,7 +67,8 @@ class ParkingDataManager {
             "isParkingActive": isActive,
             "currentFee": fee,
             "parkingStartTime": startTime.timeIntervalSince1970,
-            "parkingLotName": lotName
+            "parkingLotName": lotName,
+            "additionalFreeMinutes": additionalFreeMinutes
         ]
         
         guard let data = try? JSONSerialization.data(withJSONObject: parkingData) else {

@@ -18,6 +18,7 @@ struct ParkingSession: Identifiable, Codable, Equatable, Hashable {
     var totalFee: Int
     var isActive: Bool
     var notes: String?
+    var additionalFreeMinutes: Int
     var createdAt: Date
     var updatedAt: Date
     
@@ -30,7 +31,8 @@ struct ParkingSession: Identifiable, Codable, Equatable, Hashable {
         vehicleProfile: VehicleProfile,
         totalFee: Int = 0,
         isActive: Bool = true,
-        notes: String? = nil
+        notes: String? = nil,
+        additionalFreeMinutes: Int = 0
     ) {
         self.name = name
         self.startedAt = startedAt
@@ -41,6 +43,7 @@ struct ParkingSession: Identifiable, Codable, Equatable, Hashable {
         self.totalFee = totalFee
         self.isActive = isActive
         self.notes = notes
+        self.additionalFreeMinutes = additionalFreeMinutes
         self.createdAt = Date()
         self.updatedAt = Date()
     }
