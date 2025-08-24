@@ -22,16 +22,13 @@ struct TimerCellView: View {
     // 실제 주차장 정보 (외부에서 주입받음)
     let parkingLotProfile: ParkingLotProfile?
     
-    // MARK: - 테스트용 변수 (출시 시 제거 예정)
-    let testTimeOffset: TimeInterval
     
     // 사용자 프로필 정보
     @EnvironmentObject var userProfileVM: UserProfileViewModel
     
-    init(isParkingActive: Binding<Bool>, parkingLotProfile: ParkingLotProfile? = nil, testTimeOffset: TimeInterval = 0) {
+    init(isParkingActive: Binding<Bool>, parkingLotProfile: ParkingLotProfile? = nil) {
         self._isParkingActive = isParkingActive
         self.parkingLotProfile = parkingLotProfile
-        self.testTimeOffset = testTimeOffset
     }
     
     private var currentParkingLot: ParkingLotProfile? {
@@ -301,20 +298,6 @@ struct TimerCellView: View {
                 startParking()
             }
         }
-        // MARK: - 테스트용 시간 오프셋 변경 감지 (출시 시 제거 예정)
-        .onChange(of: testTimeOffset) { _, newValue in
-            if isParkingActive {
-                // 테스트용 시간 오프셋이 변경되면 즉시 주차비 재계산
-                calculateCurrentFee()
-                
-                // 리셋(0으로 설정) 시에도 강제로 계산
-                if newValue == 0 {
-                    DispatchQueue.main.async {
-                        calculateCurrentFee()
-                    }
-                }
-            }
-        }
         .alert("주차 종료", isPresented: $showingStopConfirmation) {
             Button("취소", role: .cancel) { }
             Button("주차 종료", role: .destructive) {
@@ -327,7 +310,7 @@ struct TimerCellView: View {
     
     // MARK: - Computed Properties
     private var elapsedTimeString: String {
-        let elapsed = currentTime.timeIntervalSince(parkingStartTime) + testTimeOffset
+        let elapsed = currentTime.timeIntervalSince(parkingStartTime)
         let hours = Int(elapsed) / 3600
         let minutes = (Int(elapsed) % 3600) / 60
         let seconds = Int(elapsed) % 60
@@ -419,8 +402,7 @@ struct TimerCellView: View {
     private func calculateCurrentFee() {
         guard let parkingLot = currentParkingLot else { return }
         
-        // 시간 계산 로직 수정: testTimeOffset 중복 적용 제거
-        let elapsed = currentTime.timeIntervalSince(parkingStartTime) + testTimeOffset
+        let elapsed = currentTime.timeIntervalSince(parkingStartTime)
         
         // 새로운 통합 계산 메서드 사용 (추가 무료시간 포함)
         let result = parkingLot.parkingFeeCalculator.calculateFee(
@@ -534,7 +516,7 @@ struct TimerCellView: View {
 }
 
 #Preview {
-    TimerCellView(isParkingActive: .constant(false), testTimeOffset: 0)
+    TimerCellView(isParkingActive: .constant(false))
         .environmentObject(UserProfileViewModel())
         .padding()
         .background(Color(.systemGroupedBackground))
