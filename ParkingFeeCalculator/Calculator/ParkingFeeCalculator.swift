@@ -7,6 +7,21 @@
 
 import Foundation
 
+// 야간 요금 타입 enum
+enum NightRateType: String, Codable, CaseIterable {
+    case flat = "flat"           // 정액 요금
+    case percentage = "percentage" // 퍼센트 할인
+    
+    var displayName: String {
+        switch self {
+        case .flat:
+            return "정액 요금"
+        case .percentage:
+            return "할인율 적용"
+        }
+    }
+}
+
 // 시간 구간별 차등 요금 구조체
 struct TimeBasedPricingTier: Codable, Identifiable {
     var id: UUID = UUID()
@@ -33,6 +48,8 @@ struct ParkingFeeCalculator: Codable, Identifiable {
     var nightFlatFee: Int?
     var nightStartHour: Int?
     var nightEndHour: Int?
+    var nightRateType: NightRateType
+    var nightDiscountPercentage: Double?
     var useTimeBasedPricing: Bool
     var pricingTiers: [TimeBasedPricingTier]
     var createdAt: Date
@@ -49,6 +66,8 @@ struct ParkingFeeCalculator: Codable, Identifiable {
         nightFlatFee: Int? = nil,
         nightStartHour: Int? = nil,
         nightEndHour: Int? = nil,
+        nightRateType: NightRateType = .flat,
+        nightDiscountPercentage: Double? = nil,
         useTimeBasedPricing: Bool = false,
         pricingTiers: [TimeBasedPricingTier] = []
     ) {
@@ -62,6 +81,8 @@ struct ParkingFeeCalculator: Codable, Identifiable {
         self.nightFlatFee = nightFlatFee
         self.nightStartHour = nightStartHour
         self.nightEndHour = nightEndHour
+        self.nightRateType = nightRateType
+        self.nightDiscountPercentage = nightDiscountPercentage
         self.useTimeBasedPricing = useTimeBasedPricing
         self.pricingTiers = pricingTiers
         self.createdAt = Date()
@@ -178,14 +199,14 @@ extension ParkingFeeCalculator {
             return 0
         }
         
-        // 야간 요금 체크
-        if isNightTime(), let nightFlatFee = nightFlatFee {
-            return nightFlatFee
-        }
-        
         // 기본 시간 이후 계산
         let chargeableDuration = duration - TimeInterval(totalFreeMinutes * 60)
         let chargeableMinutes = Int(ceil(chargeableDuration / 60))
+        
+        // 야간 요금 체크
+        if isNightTime() {
+            return calculateNightRateFee(chargeableMinutes: chargeableMinutes)
+        }
         
         // 시간 구간별 요금 계산
         if useTimeBasedPricing && !pricingTiers.isEmpty {
@@ -270,6 +291,38 @@ extension ParkingFeeCalculator {
         let extraFee = additionalUnits * self.additionalFee
         
         return initialFee + extraFee
+    }
+    
+    /// 야간 요금을 계산합니다
+    private func calculateNightRateFee(chargeableMinutes: Int) -> Int {
+        switch nightRateType {
+        case .flat:
+            // 정액 요금 적용
+            guard let flatFee = nightFlatFee else {
+                // 야간 정액 요금이 설정되지 않은 경우 일반 요금으로 계산
+                return useTimeBasedPricing && !pricingTiers.isEmpty ? 
+                    calculateTimeBasedFee(chargeableMinutes: chargeableMinutes) :
+                    calculateSimpleFee(chargeableMinutes: chargeableMinutes)
+            }
+            return flatFee
+            
+        case .percentage:
+            // 할인율 적용
+            guard let discountPercentage = nightDiscountPercentage else {
+                // 할인율이 설정되지 않은 경우 일반 요금으로 계산
+                return useTimeBasedPricing && !pricingTiers.isEmpty ? 
+                    calculateTimeBasedFee(chargeableMinutes: chargeableMinutes) :
+                    calculateSimpleFee(chargeableMinutes: chargeableMinutes)
+            }
+            
+            // 일반 요금 계산 후 할인 적용
+            let normalFee = useTimeBasedPricing && !pricingTiers.isEmpty ? 
+                calculateTimeBasedFee(chargeableMinutes: chargeableMinutes) :
+                calculateSimpleFee(chargeableMinutes: chargeableMinutes)
+            
+            let discountedAmount = Double(normalFee) * (1.0 - discountPercentage / 100.0)
+            return Int(round(discountedAmount))
+        }
     }
     
     /// 적용 가능한 할인들을 찾습니다

@@ -27,6 +27,8 @@ struct ParkingLotEditView: View {
     @State private var nightFlatFee: Int = ParkingLotDefaults.nightFlatFee
     @State private var nightStartHour: Int = ParkingLotDefaults.nightStartHour
     @State private var nightEndHour: Int = ParkingLotDefaults.nightEndHour
+    @State private var nightRateType: NightRateType = .flat
+    @State private var nightDiscountPercentage: Double = 30.0
     @State private var mildDiscountPercentage: Double = ParkingLotDefaults.mildDiscountPercentage
     @State private var severeDiscountPercentage: Double = ParkingLotDefaults.severeDiscountPercentage
     @State private var nationalMeritDiscountPercentage: Double = ParkingLotDefaults.nationalMeritDiscountPercentage
@@ -86,6 +88,8 @@ struct ParkingLotEditView: View {
             _nightFlatFee = State(initialValue: profile.parkingFeeCalculator.nightFlatFee ?? 0)
             _nightStartHour = State(initialValue: profile.parkingFeeCalculator.nightStartHour ?? 22)
             _nightEndHour = State(initialValue: profile.parkingFeeCalculator.nightEndHour ?? 7)
+            _nightRateType = State(initialValue: profile.parkingFeeCalculator.nightRateType)
+            _nightDiscountPercentage = State(initialValue: profile.parkingFeeCalculator.nightDiscountPercentage ?? 30.0)
             
             // 기존 할인 시스템에서 데이터 로드
             let discounts = profile.specialConditionDiscounts
@@ -222,13 +226,30 @@ struct ParkingLotEditView: View {
                     Toggle("야간 요금 적용", isOn: $hasNightRate)
                     
                     if hasNightRate {
-                        Stepper(value: $nightFlatFee, in: 0...200_000, step: 1000) { row("야간 정액요금", suffix: "원", value: nightFlatFee) }
+                        Picker("야간 요금 방식", selection: $nightRateType) {
+                            ForEach(NightRateType.allCases, id: \.self) { type in
+                                Text(type.displayName).tag(type)
+                            }
+                        }
+                        .pickerStyle(.segmented)
+                        
+                        if nightRateType == .flat {
+                            Stepper(value: $nightFlatFee, in: 0...200_000, step: 1000) {
+                                row("야간 정액요금", suffix: "원", value: nightFlatFee)
+                            }
+                        } else {
+                            Stepper(value: $nightDiscountPercentage, in: 0...100, step: 5) {
+                                row("야간 할인율", suffix: "%", value: Int(nightDiscountPercentage))
+                            }
+                        }
+                        
                         Picker("야간 시작", selection: $nightStartHour) {
                             ForEach(0..<24, id: \.self) { hour in
                                 Text(String(format: "%02d:00", hour)).tag(hour)
                             }
                         }
                         .pickerStyle(.navigationLink)
+                        
                         Picker("야간 종료", selection: $nightEndHour) {
                             ForEach(0..<24, id: \.self) { hour in
                                 Text(String(format: "%02d:00", hour)).tag(hour)
@@ -398,9 +419,11 @@ struct ParkingLotEditView: View {
             maxFee: hasMaxFee ? maxFee : nil,
             freeMinutes: freeMinutes,
             dailyMaxFee: hasDailyMaxFee ? dailyMaxFee : nil,
-            nightFlatFee: hasNightRate ? (nightFlatFee == 0 ? nil : nightFlatFee) : nil,
+            nightFlatFee: hasNightRate && nightRateType == .flat ? (nightFlatFee == 0 ? nil : nightFlatFee) : nil,
             nightStartHour: hasNightRate ? nightStartHour : nil,
             nightEndHour: hasNightRate ? nightEndHour : nil,
+            nightRateType: nightRateType,
+            nightDiscountPercentage: hasNightRate && nightRateType == .percentage ? nightDiscountPercentage : nil,
             useTimeBasedPricing: useTimeBasedPricing,
             pricingTiers: useTimeBasedPricing ? pricingTiers : []
         )
