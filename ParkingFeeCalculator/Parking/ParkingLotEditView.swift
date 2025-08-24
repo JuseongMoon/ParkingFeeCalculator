@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import ParkingFeeCore
 
 struct ParkingLotEditView: View {
     @Environment(\.dismiss) private var dismiss

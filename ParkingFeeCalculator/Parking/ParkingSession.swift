@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import ParkingFeeCore
 
 struct ParkingSession: Identifiable, Codable, Equatable, Hashable {
     var id: UUID = UUID()

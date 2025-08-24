@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import ParkingFeeCore
 
 struct ParkingLotListView: View {
     @StateObject private var viewModel = TimerListViewModel()

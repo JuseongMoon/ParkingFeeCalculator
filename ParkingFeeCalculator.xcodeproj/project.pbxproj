@@ -10,6 +10,10 @@
 		63D4BD402E51F193009416F2 /* WidgetKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 63D4BD3F2E51F193009416F2 /* WidgetKit.framework */; };
 		63D4BD422E51F193009416F2 /* SwiftUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 63D4BD412E51F193009416F2 /* SwiftUI.framework */; };
 		63D4BD512E51F193009416F2 /* ParkingFeeCalculatorWidgetExtension.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 63D4BD3D2E51F193009416F2 /* ParkingFeeCalculatorWidgetExtension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		63FA81F52E5B9E4B0088BA9B /* ParkingFeeCore in Frameworks */ = {isa = PBXBuildFile; productRef = 63FA81F42E5B9E4B0088BA9B /* ParkingFeeCore */; };
+		63FA81F82E5B9E620088BA9B /* ParkingFeeCore in Frameworks */ = {isa = PBXBuildFile; productRef = 63FA81F72E5B9E620088BA9B /* ParkingFeeCore */; };
+		63FA81FA2E5B9EB70088BA9B /* ParkingFeeCore in Frameworks */ = {isa = PBXBuildFile; productRef = 63FA81F92E5B9EB70088BA9B /* ParkingFeeCore */; };
+		63FA81FC2E5B9F2B0088BA9B /* ParkingFeeCore in Frameworks */ = {isa = PBXBuildFile; productRef = 63FA81FB2E5B9F2B0088BA9B /* ParkingFeeCore */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -56,7 +60,6 @@
 		63D4BD582E51F1F9009416F2 /* Exceptions for "ParkingFeeCalculator" folder in "ParkingFeeCalculatorWidgetExtension" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
-				Shared/ParkingDataManagaer.swift,
 				Widget/ParkingFeeWidget.swift,
 				Widget/ParkingFeeWidgetTimelineView.swift,
 				Widget/ParkingFeeWidgetView.swift,
@@ -108,6 +111,9 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				63FA81F52E5B9E4B0088BA9B /* ParkingFeeCore in Frameworks */,
+				63FA81FC2E5B9F2B0088BA9B /* ParkingFeeCore in Frameworks */,
+				63FA81FA2E5B9EB70088BA9B /* ParkingFeeCore in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -116,6 +122,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				63D4BD422E51F193009416F2 /* SwiftUI.framework in Frameworks */,
+				63FA81F82E5B9E620088BA9B /* ParkingFeeCore in Frameworks */,
 				63D4BD402E51F193009416F2 /* WidgetKit.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -175,6 +182,9 @@
 			);
 			name = ParkingFeeCalculator;
 			packageProductDependencies = (
+				63FA81F42E5B9E4B0088BA9B /* ParkingFeeCore */,
+				63FA81F92E5B9EB70088BA9B /* ParkingFeeCore */,
+				63FA81FB2E5B9F2B0088BA9B /* ParkingFeeCore */,
 			);
 			productName = ParkingFeeCalculator;
 			productReference = 63A24CDB2E4CCE0300CFA877 /* ParkingFeeCalculator.app */;
@@ -197,6 +207,7 @@
 			);
 			name = ParkingFeeCalculatorWidgetExtension;
 			packageProductDependencies = (
+				63FA81F72E5B9E620088BA9B /* ParkingFeeCore */,
 			);
 			productName = ParkingFeeCalculatorWidgetExtension;
 			productReference = 63D4BD3D2E51F193009416F2 /* ParkingFeeCalculatorWidgetExtension.appex */;
@@ -229,6 +240,9 @@
 			);
 			mainGroup = 63A24CD22E4CCE0300CFA877;
 			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				63FA81F62E5B9E620088BA9B /* XCLocalSwiftPackageReference "ParkingFeeCore" */,
+			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 63A24CDC2E4CCE0300CFA877 /* Products */;
 			projectDirPath = "";
@@ -413,7 +427,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = ParkingFeeCalculator/ParkingFeeCalculator.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 8;
+				CURRENT_PROJECT_VERSION = 9;
 				DEVELOPMENT_TEAM = 4823B5JB69;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -449,7 +463,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = ParkingFeeCalculator/ParkingFeeCalculator.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 8;
+				CURRENT_PROJECT_VERSION = 9;
 				DEVELOPMENT_TEAM = 4823B5JB69;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -485,7 +499,7 @@
 				ASSETCATALOG_COMPILER_WIDGET_BACKGROUND_COLOR_NAME = WidgetBackground;
 				CODE_SIGN_ENTITLEMENTS = ParkingFeeCalculatorWidgetExtension.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 8;
+				CURRENT_PROJECT_VERSION = 9;
 				DEVELOPMENT_TEAM = 4823B5JB69;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = ParkingFeeCalculatorWidget/Info.plist;
@@ -518,7 +532,7 @@
 				ASSETCATALOG_COMPILER_WIDGET_BACKGROUND_COLOR_NAME = WidgetBackground;
 				CODE_SIGN_ENTITLEMENTS = ParkingFeeCalculatorWidgetExtensionRelease.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 8;
+				CURRENT_PROJECT_VERSION = 9;
 				DEVELOPMENT_TEAM = 4823B5JB69;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = ParkingFeeCalculatorWidget/Info.plist;
@@ -575,6 +589,32 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCLocalSwiftPackageReference section */
+		63FA81F62E5B9E620088BA9B /* XCLocalSwiftPackageReference "ParkingFeeCore" */ = {
+			isa = XCLocalSwiftPackageReference;
+			relativePath = ParkingFeeCore;
+		};
+/* End XCLocalSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		63FA81F42E5B9E4B0088BA9B /* ParkingFeeCore */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = ParkingFeeCore;
+		};
+		63FA81F72E5B9E620088BA9B /* ParkingFeeCore */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = ParkingFeeCore;
+		};
+		63FA81F92E5B9EB70088BA9B /* ParkingFeeCore */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = ParkingFeeCore;
+		};
+		63FA81FB2E5B9F2B0088BA9B /* ParkingFeeCore */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = ParkingFeeCore;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = 63A24CD32E4CCE0300CFA877 /* Project object */;
 }

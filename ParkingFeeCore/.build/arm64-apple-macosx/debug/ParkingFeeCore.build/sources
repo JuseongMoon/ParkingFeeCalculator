@@ -1,0 +1,11 @@
+/Users/david/Development/Swift/myProjects/ParkingFeeCalculator/ParkingFeeCore/Sources/ParkingFeeCore/DataSync/DataChangeNotifier.swift
+/Users/david/Development/Swift/myProjects/ParkingFeeCalculator/ParkingFeeCore/Sources/ParkingFeeCore/DataSync/SharedParkingSession.swift
+/Users/david/Development/Swift/myProjects/ParkingFeeCalculator/ParkingFeeCore/Sources/ParkingFeeCore/Extensions/TimeInterval+Formatting.swift
+/Users/david/Development/Swift/myProjects/ParkingFeeCalculator/ParkingFeeCore/Sources/ParkingFeeCore/Models/DriverProfile.swift
+/Users/david/Development/Swift/myProjects/ParkingFeeCalculator/ParkingFeeCore/Sources/ParkingFeeCore/Models/ParkingFeeCalculator.swift
+/Users/david/Development/Swift/myProjects/ParkingFeeCalculator/ParkingFeeCore/Sources/ParkingFeeCore/Models/ParkingLotDefaults.swift
+/Users/david/Development/Swift/myProjects/ParkingFeeCalculator/ParkingFeeCore/Sources/ParkingFeeCore/Models/ParkingLotProfile.swift
+/Users/david/Development/Swift/myProjects/ParkingFeeCalculator/ParkingFeeCore/Sources/ParkingFeeCore/Models/VehicleProfile.swift
+/Users/david/Development/Swift/myProjects/ParkingFeeCalculator/ParkingFeeCore/Sources/ParkingFeeCore/ParkingFeeCore.swift
+/Users/david/Development/Swift/myProjects/ParkingFeeCalculator/ParkingFeeCore/Sources/ParkingFeeCore/Services/FeeCalculationService.swift
+/Users/david/Development/Swift/myProjects/ParkingFeeCalculator/ParkingFeeCore/Sources/ParkingFeeCore/Services/ParkingSessionManager.swift

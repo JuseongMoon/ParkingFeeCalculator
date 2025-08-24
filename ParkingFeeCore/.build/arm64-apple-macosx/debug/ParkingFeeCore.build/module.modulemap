@@ -1,0 +1,4 @@
+module ParkingFeeCore {
+    header "/Users/david/Development/Swift/myProjects/ParkingFeeCalculator/ParkingFeeCore/.build/arm64-apple-macosx/debug/ParkingFeeCore.build/ParkingFeeCore-Swift.h"
+    requires objc
+}

@@ -8,6 +8,7 @@
 import WidgetKit
 import SwiftUI
 import Foundation
+import ParkingFeeCore
 
 // 위젯 전용 공유 데이터 모델
 struct SharedParkingData: Codable {
@@ -33,6 +34,14 @@ struct ParkingFeeWidgetTimelineProvider: TimelineProvider {
     private let userDefaults = UserDefaults(suiteName: "group.com.ScienceFiction.ParkingFeeCalculator")
     private let parkingDataKey = "sharedParkingData"
     
+    init() {
+        // Darwin Notification 수신 설정 (위젯이 포어그라운드에 있을 때)
+        DataChangeNotifier.shared.observeAllChanges {
+            print("📡 [위젯] 주차 데이터 변경 알림 수신")
+            WidgetCenter.shared.reloadAllTimelines()
+        }
+    }
+    
     func placeholder(in context: Context) -> ParkingFeeWidgetTimelineEntry {
         ParkingFeeWidgetTimelineEntry(
             date: Date(),
@@ -43,13 +52,13 @@ struct ParkingFeeWidgetTimelineProvider: TimelineProvider {
     func getSnapshot(in context: Context, completion: @escaping (ParkingFeeWidgetTimelineEntry) -> Void) {
         let entry = ParkingFeeWidgetTimelineEntry(
             date: Date(),
-            data: loadParkingData()
+            data: loadParkingDataFromCore()
         )
         completion(entry)
     }
     
     func getTimeline(in context: Context, completion: @escaping (Timeline<ParkingFeeWidgetTimelineEntry>) -> Void) {
-        let currentData = loadParkingData()
+        let currentData = loadParkingDataFromCore()
         
         let entry = ParkingFeeWidgetTimelineEntry(
             date: Date(),
@@ -65,36 +74,31 @@ struct ParkingFeeWidgetTimelineProvider: TimelineProvider {
         completion(timeline)
     }
     
-    // 주차 데이터 불러오기
-    private func loadParkingData() -> SharedParkingData {
-        guard let userDefaults = userDefaults else {
-            print("⚠️ [위젯] App Group UserDefaults를 사용할 수 없습니다.")
+    // ParkingFeeCore를 사용한 데이터 로딩
+    private func loadParkingDataFromCore() -> SharedParkingData {
+        // ParkingSessionManager에서 현재 세션 확인
+        guard let session = ParkingSessionManager.shared.currentSession() else {
+            print("ℹ️ [위젯] 활성 주차 세션이 없습니다.")
             return SharedParkingData()
         }
         
-        guard let data = userDefaults.data(forKey: parkingDataKey) else {
-            print("ℹ️ [위젯] 저장된 주차 데이터가 없습니다.")
-            return SharedParkingData()
-        }
+        // 현재 주차비 계산
+        let currentFee = session.currentFee
         
-        guard let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
-              let isParkingActive = json["isParkingActive"] as? Bool,
-              let currentFee = json["currentFee"] as? Int,
-              let parkingStartTimeInterval = json["parkingStartTime"] as? TimeInterval,
-              let parkingLotName = json["parkingLotName"] as? String else {
-            print("⚠️ [위젯] 주차 데이터를 파싱할 수 없습니다.")
-            return SharedParkingData()
-        }
-        
-        let parkingStartTime = Date(timeIntervalSince1970: parkingStartTimeInterval)
-        print("✅ [위젯] 주차 데이터를 App Group에서 불러옴. 활성: \(isParkingActive), 요금: \(currentFee)원")
+        print("✅ [위젯] ParkingFeeCore에서 데이터 로드 완료. 활성: true, 요금: \(currentFee)원")
         
         return SharedParkingData(
-            isParkingActive: isParkingActive,
+            isParkingActive: true,
             currentFee: currentFee,
-            parkingStartTime: parkingStartTime,
-            parkingLotName: parkingLotName
+            parkingStartTime: session.startTime,
+            parkingLotName: session.parkingLot.name
         )
+    }
+    
+    // 레거시 호환을 위한 기존 메서드 (사용되지 않음)
+    private func loadParkingData() -> SharedParkingData {
+        // 이제 ParkingFeeCore를 사용하므로 레거시 메서드는 새 메서드로 리다이렉트
+        return loadParkingDataFromCore()
     }
 }
 

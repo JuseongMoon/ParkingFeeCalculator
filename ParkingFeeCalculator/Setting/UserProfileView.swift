@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import ParkingFeeCore
 
 struct UserProfileView: View {
     @EnvironmentObject var userProfileVM: UserProfileViewModel

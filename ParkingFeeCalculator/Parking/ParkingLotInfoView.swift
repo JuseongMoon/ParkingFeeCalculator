@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import ParkingFeeCore
 
 struct ParkingLotInfoView: View {
     let parkingLotProfile: ParkingLotProfile

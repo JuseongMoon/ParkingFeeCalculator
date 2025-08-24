@@ -1,0 +1,17 @@
+{
+  "": {
+    "swift-dependencies": "/Users/david/Development/Swift/myProjects/ParkingFeeCalculator/ParkingFeeCore/.build/arm64-apple-macosx/debug/ParkingFeeCoreTests.build/master.swiftdeps"
+  },
+  "/Users/david/Development/Swift/myProjects/ParkingFeeCalculator/ParkingFeeCore/Tests/ParkingFeeCoreTests/FeeCalculationTests.swift": {
+    "dependencies": "/Users/david/Development/Swift/myProjects/ParkingFeeCalculator/ParkingFeeCore/.build/arm64-apple-macosx/debug/ParkingFeeCoreTests.build/FeeCalculationTests.d",
+    "object": "/Users/david/Development/Swift/myProjects/ParkingFeeCalculator/ParkingFeeCore/.build/arm64-apple-macosx/debug/ParkingFeeCoreTests.build/FeeCalculationTests.swift.o",
+    "swiftmodule": "/Users/david/Development/Swift/myProjects/ParkingFeeCalculator/ParkingFeeCore/.build/arm64-apple-macosx/debug/ParkingFeeCoreTests.build/FeeCalculationTests~partial.swiftmodule",
+    "swift-dependencies": "/Users/david/Development/Swift/myProjects/ParkingFeeCalculator/ParkingFeeCore/.build/arm64-apple-macosx/debug/ParkingFeeCoreTests.build/FeeCalculationTests.swiftdeps"
+  },
+  "/Users/david/Development/Swift/myProjects/ParkingFeeCalculator/ParkingFeeCore/Tests/ParkingFeeCoreTests/ParkingFeeCoreTests.swift": {
+    "dependencies": "/Users/david/Development/Swift/myProjects/ParkingFeeCalculator/ParkingFeeCore/.build/arm64-apple-macosx/debug/ParkingFeeCoreTests.build/ParkingFeeCoreTests.d",
+    "object": "/Users/david/Development/Swift/myProjects/ParkingFeeCalculator/ParkingFeeCore/.build/arm64-apple-macosx/debug/ParkingFeeCoreTests.build/ParkingFeeCoreTests.swift.o",
+    "swiftmodule": "/Users/david/Development/Swift/myProjects/ParkingFeeCalculator/ParkingFeeCore/.build/arm64-apple-macosx/debug/ParkingFeeCoreTests.build/ParkingFeeCoreTests~partial.swiftmodule",
+    "swift-dependencies": "/Users/david/Development/Swift/myProjects/ParkingFeeCalculator/ParkingFeeCore/.build/arm64-apple-macosx/debug/ParkingFeeCoreTests.build/ParkingFeeCoreTests.swiftdeps"
+  }
+}

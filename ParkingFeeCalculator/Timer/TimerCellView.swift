@@ -7,6 +7,7 @@
 
 import SwiftUI
 import WidgetKit
+import ParkingFeeCore
 
 struct TimerCellView: View {
     @Binding var isParkingActive: Bool
@@ -152,7 +153,10 @@ struct TimerCellView: View {
                                     ) {
                                         EmptyView()
                                     }
-                                    .onChange(of: additionalFreeMinutes) { _, _ in
+                                    .onChange(of: additionalFreeMinutes) { _, newValue in
+                                        // 세션 매니저에 추가 무료시간 업데이트
+                                        ParkingSessionManager.shared.updateAdditionalFreeMinutes(newValue)
+                                        // 주차비 재계산
                                         calculateCurrentFee()
                                     }
                                 }
@@ -332,22 +336,35 @@ struct TimerCellView: View {
     
     // MARK: - Actions
     private func startParking() {
+        guard let parkingLot = currentParkingLot else {
+            print("❌ 주차장 정보가 없어서 주차를 시작할 수 없습니다.")
+            return
+        }
+        
         parkingStartTime = Date()
         currentTime = Date()
-        // 주차 시작 시 즉시 기본요금 계산
-        calculateCurrentFee()
-        // 위젯 업데이트
-        updateWidget()
+        
+        // ParkingFeeCore를 사용한 새 세션 시작
+        let session = SharedParkingSession(
+            startTime: parkingStartTime,
+            parkingLot: parkingLot,
+            vehicle: currentVehicle,
+            driver: userProfileVM.driverProfile,
+            additionalFreeMinutes: additionalFreeMinutes
+        )
+        
+        // 세션 매니저에 등록
+        ParkingSessionManager.shared.startSession(session)
+        
+        // 현재 주차비 계산
+        currentFee = session.currentFee
         
         // Live Activity 시작
-        guard let parkingLot = currentParkingLot else { 
-            print("주차장 정보가 없어서 Live Activity를 시작할 수 없습니다.")
-            return 
-        }
-        print("Live Activity 시작 시도...")
+        print("🚀 Live Activity 시작 시도...")
         print("주차장: \(parkingLot.name)")
         print("시작시간: \(parkingStartTime)")
         print("현재요금: \(currentFee)")
+        
         liveActivityController.start(
             startedAt: parkingStartTime,
             lotName: parkingLot.name,
@@ -356,18 +373,21 @@ struct TimerCellView: View {
             additionalMinutes: parkingLot.parkingFeeCalculator.additionalMinutes,
             currentFee: currentFee,
             additionalFreeMinutes: additionalFreeMinutes,
-            discountInfo: getDiscountInfo()
+            discountInfo: session.discountInfo
         )
     }
     
     private func stopParking() {
         isParkingActive = false
         stopTimer()
-        // 위젯 업데이트
-        updateWidget()
+        
+        // ParkingFeeCore를 사용한 세션 종료
+        ParkingSessionManager.shared.endSession()
+        
         // Live Activity 종료
         liveActivityController.end()
-        // 여기서 주차 세션을 저장하는 로직 추가
+        
+        print("🛑 주차 세션 종료 완료")
     }
     
     private func startTimer() {
@@ -398,85 +418,48 @@ struct TimerCellView: View {
         feeCalculationTimer = nil
     }
     
-    // MARK: - 새로운 통합 계산 로직
+    // MARK: - 새로운 통합 계산 로직 (ParkingFeeCore 사용)
     private func calculateCurrentFee() {
-        guard let parkingLot = currentParkingLot else { return }
+        guard let session = ParkingSessionManager.shared.currentSession() else {
+            print("❌ 활성 세션이 없습니다.")
+            return
+        }
         
-        let elapsed = currentTime.timeIntervalSince(parkingStartTime)
-        
-        // 새로운 통합 계산 메서드 사용 (추가 무료시간 포함)
-        let result = parkingLot.parkingFeeCalculator.calculateFee(
-            duration: elapsed,
-            vehicleProfile: currentVehicle,
-            driverProfile: userProfileVM.driverProfile,
-            specialConditionDiscounts: parkingLot.specialConditionDiscounts,
-            startTime: parkingStartTime,
-            additionalFreeMinutes: additionalFreeMinutes
-        )
-        
+        // FeeCalculationService를 사용한 계산
+        let result = FeeCalculationService.shared.calculateFee(for: session)
         currentFee = result.finalFee
         
-        // 위젯 업데이트
-        updateWidget()
+        // 세션 매니저에 최신 요금 업데이트
+        ParkingSessionManager.shared.updateCurrentFee(currentFee)
         
         // Live Activity 업데이트
         liveActivityController.update(
             currentFee: currentFee,
-            startedAt: parkingStartTime,
-            additionalFreeMinutes: additionalFreeMinutes,
-            discountInfo: getDiscountInfo()
+            startedAt: session.startTime,
+            additionalFreeMinutes: session.additionalFreeMinutes,
+            discountInfo: session.discountInfo
         )
+        
+        print("💰 주차비 업데이트: \(currentFee)원")
     }
     
-    // MARK: - 위젯 업데이트
-    private func updateWidget() {
-        guard let parkingLot = currentParkingLot else { return }
-        
-        // UserDefaults를 통한 직접 데이터 공유
-        let userDefaults = UserDefaults(suiteName: "group.com.ScienceFiction.ParkingFeeCalculator")
-        
-        // SharedParkingData와 동일한 구조로 데이터 생성
-        let parkingData: [String: Any] = [
-            "isParkingActive": isParkingActive,
-            "currentFee": currentFee,
-            "parkingStartTime": parkingStartTime.timeIntervalSince1970,
-            "parkingLotName": parkingLot.name,
-            "additionalFreeMinutes": additionalFreeMinutes
-        ]
-        
-        if let data = try? JSONSerialization.data(withJSONObject: parkingData) {
-            userDefaults?.set(data, forKey: "sharedParkingData")
-            // 위젯 새로고침 요청
-            WidgetCenter.shared.reloadAllTimelines()
-        }
+    // MARK: - 위젯 업데이트 (ParkingSessionManager가 자동 처리)
+    private func requestWidgetUpdate() {
+        // ParkingSessionManager가 자동으로 위젯을 업데이트하므로
+        // 여기서는 명시적 요청만 수행
+        WidgetCenter.shared.reloadAllTimelines()
     }
     
     private func getDiscountInfo() -> String? {
-        guard let parkingLot = currentParkingLot else { return nil }
-        
-        // 1분 주차로 할인 정보 미리 계산 (startTime 파라미터 추가)
-        let result = parkingLot.parkingFeeCalculator.calculateFee(
-            duration: 60, // 1분
-            vehicleProfile: currentVehicle,
-            driverProfile: userProfileVM.driverProfile,
-            specialConditionDiscounts: parkingLot.specialConditionDiscounts,
-            startTime: parkingStartTime
-        )
-        
-        return result.discountInfo
+        // 현재 세션에서 할인 정보 가져오기
+        return ParkingSessionManager.shared.currentDiscountInfo
     }
     
     private func getDiscountInfoWithHighlighting() -> AttributedString? {
-        guard let parkingLot = currentParkingLot else { return nil }
+        guard let session = ParkingSessionManager.shared.currentSession() else { return nil }
         
-        // 1분 주차로 할인 정보 미리 계산
-        let result = parkingLot.parkingFeeCalculator.calculateFee(
-            duration: 60, // 1분
-            vehicleProfile: currentVehicle,
-            driverProfile: userProfileVM.driverProfile,
-            specialConditionDiscounts: parkingLot.specialConditionDiscounts,
-            startTime: parkingStartTime
-        )
+        // FeeCalculationService를 사용해 할인 정보 계산
+        let result = FeeCalculationService.shared.calculateFee(for: session)
         
         guard !result.applicableDiscounts.isEmpty else { return nil }
         
