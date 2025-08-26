@@ -429,8 +429,7 @@ struct TimerCellView: View {
         let result = FeeCalculationService.shared.calculateFee(for: session)
         currentFee = result.finalFee
         
-        // 세션 매니저에 최신 요금 업데이트
-        ParkingSessionManager.shared.updateCurrentFee(currentFee)
+        // 세션 매니저 업데이트는 더 이상 필요하지 않습니다 (순수 함수 기반 계산)
         
         // Live Activity 업데이트
         liveActivityController.update(

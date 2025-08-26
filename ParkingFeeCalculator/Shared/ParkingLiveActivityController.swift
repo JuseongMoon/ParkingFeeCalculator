@@ -12,7 +12,6 @@ import ParkingFeeCore
 
 final class ParkingLiveActivityController: ObservableObject {
     private var activity: Activity<ParkingAttributes>?
-    private var updateTimer: Timer?
     private var session: SharedParkingSession?
     
     func start(startedAt: Date, lotName: String, initialFee: Int, 
@@ -35,10 +34,17 @@ final class ParkingLiveActivityController: ObservableObject {
         self.session = currentSession
         
         let attributes = ParkingAttributes(parkingLotName: lotName)
+        let calculator = currentSession.parkingLot.parkingFeeCalculator
         let content = ParkingAttributes.ContentState(
-            currentFee: currentFee,
-            elapsedTime: Date().timeIntervalSince(startedAt),
             startTime: startedAt,
+            parkingLotName: lotName,
+            initialFee: calculator.initialFee,
+            initialMinutes: calculator.initialMinutes,
+            additionalFee: calculator.additionalFee,
+            additionalMinutes: calculator.additionalMinutes,
+            freeMinutes: calculator.freeMinutes,
+            additionalFreeMinutes: additionalFreeMinutes,
+            maxFee: calculator.maxFee,
             discountInfo: discountInfo
         )
         
@@ -56,10 +62,7 @@ final class ParkingLiveActivityController: ObservableObject {
             print("✅ Live Activity 시작 성공!")
             print("Activity ID: \(activity?.id ?? "Unknown")")
             
-            // 자체 타이머 시작 (1분마다 업데이트)
-            startSelfUpdatingTimer()
-            
-            // Darwin Notification 수신 설정
+            // Darwin Notification 수신 설정 (설정 변경 시에만 업데이트)
             DataChangeNotifier.shared.observeAllChanges { [weak self] in
                 self?.updateFromSession()
             }
@@ -71,20 +74,25 @@ final class ParkingLiveActivityController: ObservableObject {
     }
     
     func update(currentFee: Int, startedAt: Date, additionalFreeMinutes: Int = 0, discountInfo: String? = nil) {
-        guard let activity else { return }
+        guard let activity, let session = self.session else { return }
+        
+        let calculator = session.parkingLot.parkingFeeCalculator
         let content = ParkingAttributes.ContentState(
-            currentFee: currentFee,
-            elapsedTime: Date().timeIntervalSince(startedAt),
             startTime: startedAt,
+            parkingLotName: session.parkingLot.name,
+            initialFee: calculator.initialFee,
+            initialMinutes: calculator.initialMinutes,
+            additionalFee: calculator.additionalFee,
+            additionalMinutes: calculator.additionalMinutes,
+            freeMinutes: calculator.freeMinutes,
+            additionalFreeMinutes: additionalFreeMinutes,
+            maxFee: calculator.maxFee,
             discountInfo: discountInfo
         )
         Task { await activity.update(.init(state: content, staleDate: nil)) }
     }
     
     func end() {
-        // 타이머 정리
-        stopSelfUpdatingTimer()
-        
         // Activity 종료
         guard let activity else { return }
         Task {
@@ -96,26 +104,7 @@ final class ParkingLiveActivityController: ObservableObject {
         print("🛑 Live Activity 종료 완료")
     }
     
-    // MARK: - 자체 타이머 관리
-    
-    private func startSelfUpdatingTimer() {
-        stopSelfUpdatingTimer() // 기존 타이머 정리
-        
-        updateTimer = Timer.scheduledTimer(withTimeInterval: 60.0, repeats: true) { [weak self] _ in
-            print("⏰ [Live Activity] 자체 타이머 업데이트")
-            self?.updateFromSession()
-        }
-        
-        print("⏰ [Live Activity] 자체 타이머 시작 (1분 간격)")
-    }
-    
-    private func stopSelfUpdatingTimer() {
-        updateTimer?.invalidate()
-        updateTimer = nil
-        print("⏰ [Live Activity] 자체 타이머 정지")
-    }
-    
-    // MARK: - 세션 기반 업데이트
+    // MARK: - 세션 기반 업데이트 (설정 변경 시에만)
     
     private func updateFromSession() {
         guard let currentSession = ParkingSessionManager.shared.currentSession(),
@@ -124,21 +113,25 @@ final class ParkingLiveActivityController: ObservableObject {
             return
         }
         
-        // FeeCalculationService로 최신 주차비 계산
-        let currentFee = currentSession.currentFee
-        let elapsedTime = currentSession.elapsedTime
+        let calculator = currentSession.parkingLot.parkingFeeCalculator
         let discountInfo = currentSession.discountInfo
         
         let content = ParkingAttributes.ContentState(
-            currentFee: currentFee,
-            elapsedTime: elapsedTime,
             startTime: currentSession.startTime,
+            parkingLotName: currentSession.parkingLot.name,
+            initialFee: calculator.initialFee,
+            initialMinutes: calculator.initialMinutes,
+            additionalFee: calculator.additionalFee,
+            additionalMinutes: calculator.additionalMinutes,
+            freeMinutes: calculator.freeMinutes,
+            additionalFreeMinutes: currentSession.additionalFreeMinutes,
+            maxFee: calculator.maxFee,
             discountInfo: discountInfo
         )
         
         Task {
             await activity.update(.init(state: content, staleDate: nil))
-            print("📱 [Live Activity] 업데이트 완료: \(currentFee)원, \(elapsedTime.koreanTimeFormat)")
+            print("📱 [Live Activity] 설정 변경 업데이트 완료")
         }
     }
 }

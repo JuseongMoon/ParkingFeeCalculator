@@ -13,7 +13,6 @@ public final class ParkingSessionManager {
     
     private let userDefaults: UserDefaults?
     private let sessionKey = "currentParkingSession"
-    private let lastFeeKey = "lastCalculatedFee"
     private let appGroupIdentifier = "group.com.ScienceFiction.ParkingFeeCalculator"
     
     private init() {
@@ -26,15 +25,15 @@ public final class ParkingSessionManager {
     /// - Parameter session: 시작할 주차 세션
     public func startSession(_ session: SharedParkingSession) {
         saveCurrentSession(session)
-        updateLastFee(session.currentFee)
         DataChangeNotifier.shared.notifySessionChanged()
+        WidgetUpdateService.shared.handleSessionStarted()
     }
     
     /// 현재 주차 세션을 종료합니다
     public func endSession() {
         clearCurrentSession()
-        clearLastFee()
         DataChangeNotifier.shared.notifySessionChanged()
+        WidgetUpdateService.shared.handleSessionEnded()
     }
     
     /// 현재 주차 세션을 가져옵니다
@@ -63,23 +62,11 @@ public final class ParkingSessionManager {
         )
         
         saveCurrentSession(updatedSession)
-        updateLastFee(updatedSession.currentFee)
-        DataChangeNotifier.shared.notifyFeeChanged()
-    }
-    
-    /// 현재 주차비를 업데이트합니다 (메인 앱에서 타이머 기반 업데이트용)
-    /// - Parameter fee: 계산된 주차비
-    public func updateCurrentFee(_ fee: Int) {
-        updateLastFee(fee)
-        DataChangeNotifier.shared.notifyFeeChanged()
+        DataChangeNotifier.shared.notifySessionChanged()
+        WidgetUpdateService.shared.handleSettingsChanged()
     }
     
     // MARK: - Data Access
-    
-    /// 마지막 계산된 주차비를 가져옵니다 (위젯/라이브액티비티용)
-    public func getLastCalculatedFee() -> Int {
-        return userDefaults?.integer(forKey: lastFeeKey) ?? 0
-    }
     
     // MARK: - Private Methods
     
@@ -122,16 +109,6 @@ public final class ParkingSessionManager {
         userDefaults?.removeObject(forKey: sessionKey)
         userDefaults?.synchronize()
         print("✅ [ParkingSessionManager] 세션 삭제 완료")
-    }
-    
-    private func updateLastFee(_ fee: Int) {
-        userDefaults?.set(fee, forKey: lastFeeKey)
-        userDefaults?.synchronize()
-    }
-    
-    private func clearLastFee() {
-        userDefaults?.removeObject(forKey: lastFeeKey)
-        userDefaults?.synchronize()
     }
 }
 
