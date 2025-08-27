@@ -6,23 +6,5 @@
 //  Created by 문주성 on 8/17/25.
 //
 
-import ActivityKit
-import Foundation
-
-// 메인 앱에서 사용할 Live Activity Attributes
-struct ParkingAttributes: ActivityAttributes {
-    public struct ContentState: Codable, Hashable {
-        var startTime: Date
-        var parkingLotName: String
-        var initialFee: Int
-        var initialMinutes: Int
-        var additionalFee: Int
-        var additionalMinutes: Int
-        var freeMinutes: Int
-        var additionalFreeMinutes: Int
-        var maxFee: Int?
-        var discountInfo: String?
-    }
-    
-    var parkingLotName: String
-}
+// 이 파일은 더 이상 필요하지 않습니다.
+// ParkingShared 모듈의 ParkingAttributes를 사용하세요.

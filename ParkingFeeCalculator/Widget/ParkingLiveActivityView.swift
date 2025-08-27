@@ -9,6 +9,8 @@ import SwiftUI
 import ActivityKit
 import Foundation
 import WidgetKit
+import ParkingShared
+
 
 // MARK: - Time Formatting Extension
 extension ParkingLiveActivityLockView {
@@ -34,7 +36,7 @@ extension ParkingLiveActivityLockView {
 }
 
 struct ParkingLiveActivityLockView: View {
-    let context: ActivityViewContext<ParkingLiveActivityAttributes>
+    let context: ActivityViewContext<ParkingAttributes>
     
     var body: some View {
         HStack {
@@ -46,7 +48,7 @@ struct ParkingLiveActivityLockView: View {
             Spacer()
             VStack(alignment: .trailing, spacing: 2) {
                 Text(context.state.parkingLotName).font(.caption2)
-                Text(ParkingLiveActivityLockView.formatElapsedTime(context.state.startedAt))
+                Text(ParkingLiveActivityLockView.formatElapsedTime(context.state.startTime))
                     .font(.caption2).monospacedDigit()
             }
         }
@@ -56,7 +58,7 @@ struct ParkingLiveActivityLockView: View {
 
 struct ParkingLiveActivityWidget: Widget {
     var body: some WidgetConfiguration {
-        ActivityConfiguration(for: ParkingLiveActivityAttributes.self) { context in
+        ActivityConfiguration(for: ParkingAttributes.self) { context in
             // 잠금화면/배너
             ParkingLiveActivityLockView(context: context)
         } dynamicIsland: { context in
@@ -67,7 +69,7 @@ struct ParkingLiveActivityWidget: Widget {
                         .monospacedDigit()
                 }
                 DynamicIslandExpandedRegion(.trailing) {
-                    Text(ParkingLiveActivityLockView.formatElapsedTime(context.state.startedAt))
+                    Text(ParkingLiveActivityLockView.formatElapsedTime(context.state.startTime))
                         .monospacedDigit()
                 }
                 DynamicIslandExpandedRegion(.center) {

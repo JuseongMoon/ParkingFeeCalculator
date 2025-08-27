@@ -4,7 +4,7 @@
 import PackageDescription
 
 let package = Package(
-    name: "ParkingFeeCore",
+    name: "ParkingPackages",
     platforms: [
         .iOS(.v16),
         .macOS(.v13)
@@ -14,6 +14,9 @@ let package = Package(
         .library(
             name: "ParkingFeeCore",
             targets: ["ParkingFeeCore"]),
+        .library(
+            name: "ParkingShared",
+            targets: ["ParkingShared"]),
     ],
     dependencies: [
         // Dependencies declare other packages that this package depends on.
@@ -23,7 +26,12 @@ let package = Package(
         // Targets can depend on other targets in this package and products from dependencies.
         .target(
             name: "ParkingFeeCore",
-            dependencies: []),
+            dependencies: [],
+            path: "Sources/ParkingFeeCore"),
+        .target(
+            name: "ParkingShared",
+            dependencies: [],
+            path: "Sources/ParkingShared"),
         .testTarget(
             name: "ParkingFeeCoreTests",
             dependencies: ["ParkingFeeCore"]),

@@ -9,6 +9,7 @@ import ActivityKit
 import WidgetKit
 import SwiftUI
 import ParkingFeeCore
+import ParkingShared
 
 // MARK: - UI Components
 struct NavigationStyleTimeDisplay: View {
@@ -165,23 +166,6 @@ extension ParkingFeeCalculatorWidgetLiveActivity {
     }
 }
 
-// Live Activity Attributes 정의
-struct ParkingAttributes: ActivityAttributes {
-    public struct ContentState: Codable, Hashable {
-        var startTime: Date
-        var parkingLotName: String
-        var initialFee: Int
-        var initialMinutes: Int
-        var additionalFee: Int
-        var additionalMinutes: Int
-        var freeMinutes: Int
-        var additionalFreeMinutes: Int
-        var maxFee: Int?
-        var discountInfo: String?
-    }
-    
-    var parkingLotName: String
-}
 
 struct ParkingFeeCalculatorWidgetLiveActivity: Widget {
     var body: some WidgetConfiguration {
@@ -195,8 +179,8 @@ struct ParkingFeeCalculatorWidgetLiveActivity: Widget {
                     
                     Spacer()
                     
-                    // 오른쪽: 큰 요금 표시 (실시간 계산)
-                    LargeFeeDisplay(fee: calculateCurrentFee(context.state))
+                    // 오른쪽: 큰 요금 표시 (계산 완료된 값)
+                    LargeFeeDisplay(fee: context.state.currentFee)
                 }
                 
                 // 하단 정보 바
@@ -262,7 +246,7 @@ struct ParkingFeeCalculatorWidgetLiveActivity: Widget {
                             Text("현재 요금")
                                 .font(.system(size: 12))
                                 .foregroundColor(.secondary)
-                            Text("\(calculateCurrentFee(context.state))원")
+                            Text("\(context.state.currentFee)원")
                                 .font(.system(size: 16, weight: .bold, design: .rounded))
                                 .foregroundColor(.blue)
                         }
@@ -287,7 +271,7 @@ struct ParkingFeeCalculatorWidgetLiveActivity: Widget {
                     
             } compactTrailing: {
                 // 컴팩트 상태 - 오른쪽: 요금만 간단히
-                Text("\(calculateCurrentFee(context.state))원")
+                Text("\(context.state.currentFee)원")
                     .font(.system(size: 14, weight: .bold, design: .rounded))
                     .foregroundColor(.blue)
                 
@@ -301,52 +285,15 @@ struct ParkingFeeCalculatorWidgetLiveActivity: Widget {
     }
 }
 
-// 요금 계산 함수 (순수 함수)
-func calculateCurrentFee(_ state: ParkingAttributes.ContentState) -> Int {
-    let elapsed = Date().timeIntervalSince(state.startTime)
-    let totalFreeMinutes = state.freeMinutes + state.additionalFreeMinutes
-    
-    // 무료 시간 체크
-    if elapsed <= TimeInterval(totalFreeMinutes * 60) {
-        return 0
-    }
-    
-    // 기본 시간 이후 계산
-    let chargeableDuration = elapsed - TimeInterval(totalFreeMinutes * 60)
-    let chargeableMinutes = Int(ceil(chargeableDuration / 60))
-    
-    if chargeableMinutes <= state.initialMinutes {
-        return state.initialFee
-    }
-    
-    // 추가 시간 계산
-    let extraMinutes = chargeableMinutes - state.initialMinutes
-    let additionalUnits = Int(ceil(Double(extraMinutes) / Double(state.additionalMinutes)))
-    let extraFee = additionalUnits * state.additionalFee
-    
-    let totalFee = state.initialFee + extraFee
-    
-    // 최대 요금 제한
-    if let maxFee = state.maxFee {
-        return min(totalFee, maxFee)
-    }
-    
-    return totalFee
-}
 
 #Preview("Notification", as: .content, using: ParkingAttributes(parkingLotName: "강남 지하주차장")) { 
    ParkingFeeCalculatorWidgetLiveActivity()
 } contentStates: {
     ParkingAttributes.ContentState(
-        startTime: Date(),
+        startTime: Date().addingTimeInterval(-3600), // 1시간 전 시작
         parkingLotName: "강남 지하주차장",
-        initialFee: 1000,
-        initialMinutes: 30,
-        additionalFee: 500,
-        additionalMinutes: 10,
-        freeMinutes: 10,
-        additionalFreeMinutes: 0,
-        maxFee: 10000,
-        discountInfo: nil
+        currentFee: 2500,
+        discountInfo: "경차 20% 할인",
+        nextChangeDate: Date().addingTimeInterval(600) // 10분 후 다음 변경
     )
 }

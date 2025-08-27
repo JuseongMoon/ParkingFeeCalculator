@@ -15,7 +15,6 @@ struct TimerCellView: View {
     @State private var currentTime = Date()
     @State private var currentFee = 0
     @State private var displayTimer: Timer? // 경과 시간 표시용 타이머 (1초마다)
-    @State private var feeCalculationTimer: Timer? // 주차비 계산용 타이머 (1분마다)
     @State private var showingStopConfirmation = false
     @State private var additionalFreeMinutes: Int = 0
     @StateObject private var liveActivityController = ParkingLiveActivityController()
@@ -156,8 +155,13 @@ struct TimerCellView: View {
                                     .onChange(of: additionalFreeMinutes) { _, newValue in
                                         // 세션 매니저에 추가 무료시간 업데이트
                                         ParkingSessionManager.shared.updateAdditionalFreeMinutes(newValue)
-                                        // 주차비 재계산
-                                        calculateCurrentFee()
+                                        // 주차비 재계산 (UI 표시용)
+                                        updateDisplayFee()
+                                        // Live Activity도 즉시 업데이트 (설정 변경)
+                                        liveActivityController.update(
+                                            currentFee: currentFee,
+                                            startedAt: parkingStartTime
+                                        )
                                     }
                                 }
                                 
@@ -368,11 +372,7 @@ struct TimerCellView: View {
         liveActivityController.start(
             startedAt: parkingStartTime,
             lotName: parkingLot.name,
-            initialFee: parkingLot.parkingFeeCalculator.initialFee,
-            additionalFee: parkingLot.parkingFeeCalculator.additionalFee,
-            additionalMinutes: parkingLot.parkingFeeCalculator.additionalMinutes,
             currentFee: currentFee,
-            additionalFreeMinutes: additionalFreeMinutes,
             discountInfo: session.discountInfo
         )
     }
@@ -396,17 +396,18 @@ struct TimerCellView: View {
             currentTime = Date()
         }
         
-        // 주차비 계산용 타이머 (1분마다)
-        feeCalculationTimer = Timer.scheduledTimer(withTimeInterval: 60.0, repeats: true) { _ in
+        // 주차비 계산은 Live Activity 스케줄러가 담당
+        // UI 표시용으로만 현재 요금 업데이트 (매 10초마다)
+        Timer.scheduledTimer(withTimeInterval: 10.0, repeats: true) { _ in
             if isParkingActive {
-                calculateCurrentFee()
+                updateDisplayFee()
             }
         }
         
-        // 주차 시작 시 즉시 첫 번째 계산 실행 (1분 대기 없이)
+        // 주차 시작 시 즉시 첫 번째 계산 실행
         if isParkingActive {
             DispatchQueue.main.async {
-                calculateCurrentFee()
+                updateDisplayFee()
             }
         }
     }
@@ -414,32 +415,27 @@ struct TimerCellView: View {
     private func stopTimer() {
         displayTimer?.invalidate()
         displayTimer = nil
-        feeCalculationTimer?.invalidate()
-        feeCalculationTimer = nil
     }
     
-    // MARK: - 새로운 통합 계산 로직 (ParkingFeeCore 사용)
-    private func calculateCurrentFee() {
+    // MARK: - UI 표시용 요금 업데이트 (ParkingFeeCore 사용)
+    private func updateDisplayFee() {
         guard let session = ParkingSessionManager.shared.currentSession() else {
             print("❌ 활성 세션이 없습니다.")
             return
         }
         
-        // FeeCalculationService를 사용한 계산
+        // ParkingFeeCore로 현재 요금 계산
         let result = FeeCalculationService.shared.calculateFee(for: session)
-        currentFee = result.finalFee
         
-        // 세션 매니저 업데이트는 더 이상 필요하지 않습니다 (순수 함수 기반 계산)
+        DispatchQueue.main.async {
+            self.currentFee = result.finalFee
+        }
+    }
+    
+    // MARK: - 레거시 지원: calculateCurrentFee (내부적으로 updateDisplayFee 호출)
+    private func calculateCurrentFee() {
+        updateDisplayFee()
         
-        // Live Activity 업데이트
-        liveActivityController.update(
-            currentFee: currentFee,
-            startedAt: session.startTime,
-            additionalFreeMinutes: session.additionalFreeMinutes,
-            discountInfo: session.discountInfo
-        )
-        
-        print("💰 주차비 업데이트: \(currentFee)원")
     }
     
     // MARK: - 위젯 업데이트 (ParkingSessionManager가 자동 처리)
