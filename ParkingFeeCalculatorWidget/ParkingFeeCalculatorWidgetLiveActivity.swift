@@ -21,9 +21,19 @@ struct NavigationStyleTimeDisplay: View {
                 .foregroundColor(.white)
             
             VStack(alignment: .leading, spacing: 2) {
-                Text(startTime, style: .timer)
-                    .font(.system(size: 22, weight: .bold, design: .rounded))
-                    .foregroundColor(.white)
+                ZStack(alignment: .leading) {
+                    Text("88:88:88")
+                        .font(.system(size: 22, weight: .bold, design: .rounded))
+                        .monospacedDigit()
+                        .opacity(0)
+                    Text(startTime, style: .timer)
+                        .font(.system(size: 22, weight: .bold, design: .rounded))
+                        .monospacedDigit()
+                        .lineLimit(1)
+                        .minimumScaleFactor(0.85)
+                        .allowsTightening(true)
+                        .foregroundColor(.white)
+                }
                 Text("경과")
                     .font(.system(size: 14, weight: .medium))
                     .foregroundColor(.white.opacity(0.8))
@@ -55,14 +65,23 @@ struct LargeFeeDisplay: View {
     
     var body: some View {
         VStack(alignment: .trailing, spacing: 2) {
-            HStack(alignment: .bottom, spacing: 2) {
-                Text("\(fee)")
-                    .font(.system(size: 28, weight: .bold, design: .rounded))
-                    .foregroundColor(.white)
+            HStack(alignment: .firstTextBaseline, spacing: 4) {
+                ZStack(alignment: .trailing) {
+                    Text("888,888")
+                        .font(.system(size: 28, weight: .bold, design: .rounded))
+                        .monospacedDigit()
+                        .opacity(0)
+                    Text("\(fee)")
+                        .font(.system(size: 28, weight: .bold, design: .rounded))
+                        .monospacedDigit()
+                        .lineLimit(1)
+                        .minimumScaleFactor(0.85)
+                        .allowsTightening(true)
+                        .foregroundColor(.white)
+                }
                 Text("원")
                     .font(.system(size: 16, weight: .medium))
                     .foregroundColor(.white.opacity(0.8))
-                    .padding(.bottom, 2)
             }
         }
     }
@@ -82,14 +101,19 @@ struct CompactInfoBar: View {
             Text(parkingLotName)
                 .font(.system(size: 13, weight: .medium))
                 .foregroundColor(.white)
+                .lineLimit(1)
+                .truncationMode(.tail)
+                .layoutPriority(1)
             
             Text("|")
                 .font(.system(size: 13))
                 .foregroundColor(.white.opacity(0.5))
             
-            Text(formatStartTime(startTime))
+            Text(formatStartTime(startTime) + " 시작")
                 .font(.system(size: 13))
                 .foregroundColor(.white.opacity(0.8))
+                .lineLimit(1)
+                .truncationMode(.middle)
             
             if let discount = discountInfo {
                 Text("|")
@@ -99,6 +123,8 @@ struct CompactInfoBar: View {
                 Text(discount)
                     .font(.system(size: 13))
                     .foregroundColor(.green)
+                    .lineLimit(1)
+                    .truncationMode(.tail)
             }
             
             Spacer()
@@ -108,7 +134,7 @@ struct CompactInfoBar: View {
     private func formatStartTime(_ date: Date) -> String {
         let formatter = DateFormatter()
         formatter.dateFormat = "HH:mm"
-        return formatter.string(from: date) + " 시작"
+        return formatter.string(from: date)
     }
 }
 
@@ -180,8 +206,8 @@ struct ParkingFeeCalculatorWidgetLiveActivity: Widget {
                     discountInfo: context.state.discountInfo
                 )
             }
-            .padding(.horizontal, 20)
-            .padding(.vertical, 16)
+            .padding(.horizontal, 14)
+            .padding(.vertical, 12)
             .background {
                 // Maps 스타일 다크 그라데이션
                 LinearGradient(
