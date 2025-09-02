@@ -9,6 +9,7 @@ import Foundation
 
 /// 앱, 위젯, 라이브 액티비티 간 공유되는 주차 세션 데이터
 public struct SharedParkingSession: Codable, Equatable, Hashable {
+    public let sessionId: String // AWS Lambda와 동기화를 위한 고유 세션 ID
     public let startTime: Date
     public let parkingLot: ParkingLotProfile
     public let vehicle: VehicleProfile
@@ -37,12 +38,15 @@ public struct SharedParkingSession: Codable, Equatable, Hashable {
     }
     
     public init(
+        sessionId: String? = nil, // 옵셔널로 하여 자동 생성 지원
         startTime: Date,
         parkingLot: ParkingLotProfile,
         vehicle: VehicleProfile,
         driver: DriverProfile,
         additionalFreeMinutes: Int = 0
     ) {
+        // sessionId가 제공되지 않으면 UUID로 자동 생성
+        self.sessionId = sessionId ?? UUID().uuidString
         self.startTime = startTime
         self.parkingLot = parkingLot
         self.vehicle = vehicle

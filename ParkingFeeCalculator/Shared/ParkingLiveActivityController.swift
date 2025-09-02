@@ -3,6 +3,7 @@
 //  ParkingFeeCalculator
 //
 //  Created by 문주성 on 8/17/25.
+//  Refactored by Claude Code on 9/2/25 - Push 기반으로 변경
 //
 
 import ActivityKit
@@ -11,13 +12,20 @@ import SwiftUI
 import ParkingFeeCore
 import ParkingShared
 
+/// Push 기반 Live Activity 컨트롤러 (레거시 호환성 유지)
+/// 내부적으로 RemoteLiveActivityService를 사용하여 AWS Lambda + APNs 통합
 final class ParkingLiveActivityController: ObservableObject {
-    private var activity: Activity<ParkingAttributes>?
-    private var session: SharedParkingSession?
-    private let feeUpdateScheduler = FeeUpdateScheduler()
+    private let remoteLiveActivityService = RemoteLiveActivityService.shared
+    private let foregroundSyncService = ForegroundSyncService.shared
     
+    /// Live Activity를 시작합니다 (Push 기반)
+    /// - Parameters:
+    ///   - startedAt: 주차 시작 시간
+    ///   - lotName: 주차장 이름  
+    ///   - currentFee: 현재 요금 (사용되지 않음 - 서버에서 계산)
+    ///   - discountInfo: 할인 정보 (사용되지 않음 - 서버에서 계산)
     func start(startedAt: Date, lotName: String, currentFee: Int = 0, discountInfo: String? = nil) {
-        print("🚀 === Live Activity 시작 (경계 기반 업데이트) ===")
+        print("🚀 === Live Activity 시작 (Push 기반으로 업그레이드) ===")
         print("ActivityAuthorizationInfo().areActivitiesEnabled: \(ActivityAuthorizationInfo().areActivitiesEnabled)")
         
         guard ActivityAuthorizationInfo().areActivitiesEnabled else { 
@@ -25,139 +33,90 @@ final class ParkingLiveActivityController: ObservableObject {
             return 
         }
         
-        // 현재 세션 정보 가져오기
-        guard let currentSession = ParkingSessionManager.shared.currentSession() else {
-            print("❌ 활성 세션이 없어서 Live Activity를 시작할 수 없습니다.")
-            return
-        }
-        
-        self.session = currentSession
-        
-        // ParkingFeeCore로 현재 요금 계산
-        let now = Date()
-        let feeResult = FeeCalculationService.shared.calculateFee(for: currentSession, at: now)
-        
-        // 다음 변경 시점 계산
-        let nextChange = FeeScheduler.nextChangeDate(
-            startTime: currentSession.startTime,
-            currentTime: now,
-            calculator: currentSession.parkingLot.parkingFeeCalculator,
-            additionalFreeMinutes: currentSession.additionalFreeMinutes
+        // RemoteLiveActivityService로 위임 (Push 기반)
+        remoteLiveActivityService.start(
+            startedAt: startedAt,
+            lotName: lotName,
+            currentFee: currentFee,
+            discountInfo: discountInfo
         )
         
-        let attributes = ParkingAttributes(parkingLotName: lotName)
-        let content = ParkingAttributes.ContentState(
-            startTime: startedAt,
-            parkingLotName: lotName,
-            currentFee: feeResult.finalFee,
-            discountInfo: feeResult.appliedDiscount?.name,
-            nextChangeDate: nextChange
-        )
-        
-        do {
-            print("✅ Live Activity 요청 시도...")
-            print("Attributes: \(attributes)")
-            print("Content: \(content)")
-            
-            activity = try Activity<ParkingAttributes>.request(
-                attributes: attributes,
-                content: .init(state: content, staleDate: nil),
-                pushType: nil
-            )
-            
-            print("✅ Live Activity 시작 성공!")
-            print("Activity ID: \(activity?.id ?? "Unknown")")
-            print("📅 다음 변경 시점: \(nextChange?.description ?? "없음")")
-            
-            // 경계 기반 타이머 시작
-            if let activity = activity {
-                feeUpdateScheduler.schedule(
-                    for: activity,
-                    session: currentSession,
-                    nextChangeDate: nextChange
-                )
-            }
-            
-            // 설정 변경 시 즉시 업데이트
-            DataChangeNotifier.shared.observeAllChanges { [weak self] in
-                self?.handleSettingsChanged()
-            }
-            
-        } catch {
-            print("❌ Live Activity 시작 실패: \(error)")
-            print("Error details: \(error.localizedDescription)")
-        }
+        print("✅ Push 기반 Live Activity 시작 완료")
     }
     
     /// 수동 업데이트 (설정 변경 시 사용, 레거시 지원)
+    /// 이제 포그라운드 보정 서비스를 통해 즉시 업데이트 수행
     func update(currentFee: Int = 0, startedAt: Date = Date(), discountInfo: String? = nil) {
-        guard let currentSession = ParkingSessionManager.shared.currentSession() else { return }
+        print("🔄 [ParkingLiveActivity] 수동 업데이트 요청 - 포그라운드 보정 사용")
         
+        // 포그라운드 보정 서비스로 즉시 업데이트
         Task { @MainActor in
-            await feeUpdateScheduler.immediateUpdate(with: currentSession)
+            await foregroundSyncService.performImmediateSync()
         }
     }
     
+    /// Live Activity를 종료합니다
     func end() {
-        // 타이머 중단
-        feeUpdateScheduler.stop()
+        print("🛑 [ParkingLiveActivity] Live Activity 종료 요청")
         
-        // Activity 종료
-        guard let activity else { return }
-        Task {
-            await activity.end(nil, dismissalPolicy: .immediate)
-        }
-        self.activity = nil
-        self.session = nil
+        // RemoteLiveActivityService로 위임
+        remoteLiveActivityService.end()
         
-        print("🛑 Live Activity 종료 완료")
+        print("✅ [ParkingLiveActivity] Push 기반 Live Activity 종료 완료")
     }
     
-    // MARK: - 세션 기반 업데이트 (설정 변경 시에만)
+    // MARK: - 레거시 호환성 속성들
     
-    private func handleSettingsChanged() {
-        guard let currentSession = ParkingSessionManager.shared.currentSession() else {
-            print("❌ [Live Activity] 세션이 없어 설정 변경 처리 불가")
-            return
-        }
-        
-        // 세션 업데이트
-        self.session = currentSession
-        
-        // 즉시 업데이트 및 타이머 재예약
-        Task { @MainActor in
-            await feeUpdateScheduler.immediateUpdate(with: currentSession)
-            print("📱 [Live Activity] 설정 변경으로 인한 업데이트 완료")
-        }
-    }
-    
-    /// 현재 예약된 다음 업데이트 시간
+    /// 현재 예약된 다음 업데이트 시간 (서버 기반으로 변경됨)
     var nextUpdateTime: Date? {
-        guard let session = session else { return nil }
-        return FeeScheduler.nextChangeDate(
-            startTime: session.startTime,
-            currentTime: Date(),
-            calculator: session.parkingLot.parkingFeeCalculator,
-            additionalFreeMinutes: session.additionalFreeMinutes
-        )
+        // 서버 응답에서 다음 변경 시점 가져오기
+        return AppGroupSnapshot.shared.serverResponse()?.nextChangeTime
     }
     
-    /// 현재 스케줄러 상태 정보
+    /// 현재 스케줄러 상태 정보 (Push 기반 정보로 변경)
     var schedulerInfo: String {
-        return feeUpdateScheduler.scheduleInfo
+        let serverResponse = AppGroupSnapshot.shared.serverResponse()
+        let nextChange = serverResponse?.nextChangeTime?.description ?? "서버에서 관리"
+        let scheduleId = serverResponse?.nextScheduleId ?? "없음"
+        
+        return """
+        Push 기반 스케줄링 활성
+        다음 서버 업데이트: \(nextChange)
+        스케줄 ID: \(scheduleId)
+        """
     }
-}
+    
+    /// 현재 활성 상태 확인
+    var isActive: Bool {
+        return remoteLiveActivityService.isActive
+    }
+    
+    /// 디버깅용 상태 정보
+    var debugInfo: String {
+        return """
+        === Push 기반 Live Activity ===
+        \(remoteLiveActivityService.currentActivityInfo)
+        
+        === 포그라운드 보정 상태 ===
+        \(foregroundSyncService.debugInfo)
+        ===============================
+        """
+    }
 
-// MARK: - App Lifecycle 처리
+// MARK: - App Lifecycle 처리 (Push 기반으로 단순화)
 extension ParkingLiveActivityController {
     
     /// 앱이 백그라운드로 전환될 때 호출
+    /// Push 기반에서는 서버가 관리하므로 특별한 처리 불필요
     func handleAppDidEnterBackground() {
-        feeUpdateScheduler.handleAppDidEnterBackground()
+        print("📱 [ParkingLiveActivity] 앱 백그라운드 전환 - Push 기반이므로 서버가 관리")
+        // 백그라운드에서도 Push 알림이 도착하므로 추가 작업 불필요
     }
     
     /// 앱이 포그라운드로 복귀할 때 호출
+    /// 포그라운드 보정 서비스가 자동으로 동기화 수행
     func handleAppDidBecomeActive() {
-        feeUpdateScheduler.handleAppDidBecomeActive()
+        print("📱 [ParkingLiveActivity] 앱 포그라운드 복귀 - 자동 보정 수행")
+        // ForegroundSyncService가 자동으로 NotificationCenter를 통해 보정 실행
     }
 }
