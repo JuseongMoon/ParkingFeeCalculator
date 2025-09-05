@@ -1,0 +1,135 @@
+# serverless.yml - Serverless Framework 배포 설정
+service: parking-push-service
+
+frameworkVersion: '3'
+
+provider:
+  name: aws
+  runtime: python3.9
+  region: ap-northeast-2  # 서울 리전
+  timeout: 30
+  memorySize: 256
+  
+  # 환경 변수
+  environment:
+    DYNAMODB_TABLE: ParkingSessions
+    PUSH_SENDER_LAMBDA_ARN: !GetAtt ParkingPushSenderLambdaFunction.Arn
+    EVENTBRIDGE_ROLE_ARN: !GetAtt EventBridgeExecutionRole.Arn
+    
+    # APNs 설정 (배포 시 환경변수로 주입)
+    APNS_KEY_ID: ${env:APNS_KEY_ID}
+    APNS_TEAM_ID: ${env:APNS_TEAM_ID}
+    APNS_BUNDLE_ID: ${env:APNS_BUNDLE_ID}
+    APNS_PRIVATE_KEY: ${env:APNS_PRIVATE_KEY}
+    APNS_ENVIRONMENT: ${env:APNS_ENVIRONMENT, 'production'}
+  
+  # IAM 권한
+  iam:
+    role:
+      statements:
+        # DynamoDB 권한
+        - Effect: Allow
+          Action:
+            - dynamodb:Query
+            - dynamodb:Scan
+            - dynamodb:GetItem
+            - dynamodb:PutItem
+            - dynamodb:UpdateItem
+            - dynamodb:DeleteItem
+          Resource: !GetAtt ParkingSessionsTable.Arn
+        
+        # EventBridge Scheduler 권한
+        - Effect: Allow
+          Action:
+            - scheduler:CreateSchedule
+            - scheduler:DeleteSchedule
+            - scheduler:GetSchedule
+            - scheduler:UpdateSchedule
+          Resource: "*"
+        
+        # Lambda 호출 권한
+        - Effect: Allow
+          Action:
+            - lambda:InvokeFunction
+          Resource: !GetAtt ParkingPushSenderLambdaFunction.Arn
+
+# Lambda 함수 정의
+functions:
+  # 세션 관리 API
+  parkingSessionHandler:
+    handler: parking_session_handler.lambda_handler
+    events:
+      # API Gateway 엔드포인트
+      - http:
+          path: /sessions/start
+          method: POST
+          cors: true
+      - http:
+          path: /sessions/{sessionId}/end
+          method: POST
+          cors: true
+      - http:
+          path: /sessions/{sessionId}/push-token
+          method: PUT
+          cors: true
+    
+  # Push 전송 함수 (EventBridge에서 호출)
+  parkingPushSender:
+    handler: parking_push_sender.lambda_handler
+
+# AWS 리소스 정의
+resources:
+  Resources:
+    # DynamoDB 테이블
+    ParkingSessionsTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: ParkingSessions
+        AttributeDefinitions:
+          - AttributeName: sessionId
+            AttributeType: S
+        KeySchema:
+          - AttributeName: sessionId
+            KeyType: HASH
+        BillingMode: PAY_PER_REQUEST  # 온디맨드 과금
+        TimeToLiveSpecification:
+          AttributeName: ttl
+          Enabled: true
+        Tags:
+          - Key: Service
+            Value: parking-push
+          - Key: Environment
+            Value: ${opt:stage, 'dev'}
+    
+    # EventBridge용 실행 역할
+    EventBridgeExecutionRole:
+      Type: AWS::IAM::Role
+      Properties:
+        AssumeRolePolicyDocument:
+          Version: '2012-10-17'
+          Statement:
+            - Effect: Allow
+              Principal:
+                Service: scheduler.amazonaws.com
+              Action: sts:AssumeRole
+        Policies:
+          - PolicyName: EventBridgeLambdaInvokePolicy
+            PolicyDocument:
+              Version: '2012-10-17'
+              Statement:
+                - Effect: Allow
+                  Action:
+                    - lambda:InvokeFunction
+                  Resource: !GetAtt ParkingPushSenderLambdaFunction.Arn
+
+# 플러그인
+plugins:
+  - serverless-python-requirements
+
+custom:
+  # Python 의존성 관리
+  pythonRequirements:
+    dockerizePip: non-linux
+    zip: true
+    slim: true
+    strip: false

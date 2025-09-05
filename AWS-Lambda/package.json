@@ -1,0 +1,28 @@
+{
+  "name": "parking-push-service",
+  "version": "1.0.0",
+  "description": "AWS Lambda functions for parking fee push notifications",
+  "main": "index.js",
+  "scripts": {
+    "deploy": "serverless deploy",
+    "deploy-dev": "serverless deploy --stage dev",
+    "deploy-prod": "serverless deploy --stage prod",
+    "remove": "serverless remove",
+    "logs": "serverless logs -f parkingPushSender -t",
+    "invoke": "serverless invoke -f parkingSessionHandler",
+    "test": "python -m pytest tests/"
+  },
+  "devDependencies": {
+    "serverless": "^3.35.2",
+    "serverless-python-requirements": "^6.0.0"
+  },
+  "keywords": [
+    "aws",
+    "lambda",
+    "push-notifications",
+    "parking",
+    "serverless"
+  ],
+  "author": "Your Name",
+  "license": "MIT"
+}
