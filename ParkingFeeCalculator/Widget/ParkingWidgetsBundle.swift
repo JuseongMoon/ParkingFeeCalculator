@@ -3,6 +3,7 @@
 //  ParkingFeeCalculator
 //
 //  Created by 문주성 on 8/17/25.
+//  Updated for Clean Architecture on 9/16/25.
 //
 
 import WidgetKit
@@ -11,6 +12,7 @@ import ActivityKit
 
 @main
 struct ParkingWidgetsBundle: WidgetBundle {
+
     @WidgetBundleBuilder
     var body: some Widget {
         ParkingFeeWidget()           // 기존 잠금화면 위젯

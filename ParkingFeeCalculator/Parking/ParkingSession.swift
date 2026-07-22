@@ -6,7 +6,7 @@
 //
 
 import Foundation
-import ParkingFeeCore
+// import ParkingFeeCore // 임시 제거
 
 struct ParkingSession: Identifiable, Codable, Equatable, Hashable {
     var id: UUID = UUID()

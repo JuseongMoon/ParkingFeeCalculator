@@ -7,7 +7,7 @@
 
 import SwiftUI
 import WidgetKit
-import ParkingFeeCore
+// import ParkingFeeCore // 임시 제거
 
 struct TimerCellView: View {
     @Binding var isParkingActive: Bool

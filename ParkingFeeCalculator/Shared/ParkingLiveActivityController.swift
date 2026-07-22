@@ -9,11 +9,10 @@
 import ActivityKit
 import Foundation
 import SwiftUI
-import ParkingFeeCore
-import ParkingShared
 
 /// Push 기반 Live Activity 컨트롤러 (레거시 호환성 유지)
 /// 내부적으로 RemoteLiveActivityService를 사용하여 AWS Lambda + APNs 통합
+@MainActor
 final class ParkingLiveActivityController: ObservableObject {
     private let remoteLiveActivityService = RemoteLiveActivityService.shared
     private let foregroundSyncService = ForegroundSyncService.shared
@@ -102,6 +101,7 @@ final class ParkingLiveActivityController: ObservableObject {
         ===============================
         """
     }
+}
 
 // MARK: - App Lifecycle 처리 (Push 기반으로 단순화)
 extension ParkingLiveActivityController {

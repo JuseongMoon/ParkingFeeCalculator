@@ -7,7 +7,7 @@
 
 import Foundation
 import WidgetKit
-import ParkingFeeCore
+// import ParkingFeeCore // 임시 제거
 
 /// App Group을 통한 단일 진실원 데이터 스냅샷 관리
 /// 위젯과 Live Activity 간 일관성 보장

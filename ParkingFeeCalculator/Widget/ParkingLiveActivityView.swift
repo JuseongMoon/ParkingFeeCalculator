@@ -9,8 +9,31 @@ import SwiftUI
 import ActivityKit
 import Foundation
 import WidgetKit
-import ParkingShared
 
+// Widget Extension용 ParkingAttributes 정의 (메인 앱과 호환)
+public struct ParkingAttributes: ActivityAttributes {
+    public struct ContentState: Codable, Hashable {
+        public var startTime: Date
+        public var parkingLotName: String
+        public var currentFee: Int
+        public var discountInfo: String?
+        public var nextChangeDate: Date?
+
+        public init(startTime: Date, parkingLotName: String, currentFee: Int, discountInfo: String? = nil, nextChangeDate: Date? = nil) {
+            self.startTime = startTime
+            self.parkingLotName = parkingLotName
+            self.currentFee = currentFee
+            self.discountInfo = discountInfo
+            self.nextChangeDate = nextChangeDate
+        }
+    }
+
+    public var parkingLotName: String
+
+    public init(parkingLotName: String) {
+        self.parkingLotName = parkingLotName
+    }
+}
 
 // MARK: - Time Formatting Extension
 extension ParkingLiveActivityLockView {

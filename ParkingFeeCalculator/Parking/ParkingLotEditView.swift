@@ -6,7 +6,7 @@
 //
 
 import SwiftUI
-import ParkingFeeCore
+// import ParkingFeeCore // 임시 제거
 
 struct ParkingLotEditView: View {
     @Environment(\.dismiss) private var dismiss
@@ -73,11 +73,11 @@ struct ParkingLotEditView: View {
         if let profile = parkingLotProfile {
             _name = State(initialValue: profile.name)
             _address = State(initialValue: profile.address)
-                    _hasInitialFee = State(initialValue: profile.parkingFeeCalculator.initialFee > 0)
-        _initialFee = State(initialValue: profile.parkingFeeCalculator.initialFee)
-        _initialMinutes = State(initialValue: profile.parkingFeeCalculator.initialMinutes)
-        _additionalFee = State(initialValue: profile.parkingFeeCalculator.additionalFee)
-        _additionalMinutes = State(initialValue: profile.parkingFeeCalculator.additionalMinutes)
+            _hasInitialFee = State(initialValue: profile.parkingFeeCalculator.initialFee > 0)
+            _initialFee = State(initialValue: profile.parkingFeeCalculator.initialFee)
+            _initialMinutes = State(initialValue: profile.parkingFeeCalculator.initialMinutes)
+            _additionalFee = State(initialValue: profile.parkingFeeCalculator.additionalFee)
+            _additionalMinutes = State(initialValue: profile.parkingFeeCalculator.additionalMinutes)
             _hasMaxFee = State(initialValue: profile.parkingFeeCalculator.maxFee != nil)
             _maxFee = State(initialValue: profile.parkingFeeCalculator.maxFee ?? 20000)
             _freeMinutes = State(initialValue: profile.parkingFeeCalculator.freeMinutes)
@@ -90,7 +90,7 @@ struct ParkingLotEditView: View {
             _nightStartHour = State(initialValue: profile.parkingFeeCalculator.nightStartHour ?? 22)
             _nightEndHour = State(initialValue: profile.parkingFeeCalculator.nightEndHour ?? 7)
             _nightRateType = State(initialValue: profile.parkingFeeCalculator.nightRateType)
-            _nightDiscountPercentage = State(initialValue: profile.parkingFeeCalculator.nightDiscountPercentage ?? 30.0)
+            _nightDiscountPercentage = State(initialValue: profile.parkingFeeCalculator.nightDiscountPercentage)
             
             // 기존 할인 시스템에서 데이터 로드
             let discounts = profile.specialConditionDiscounts
@@ -548,5 +548,3 @@ struct ParkingLotEditView: View {
 #Preview {
     ParkingLotEditView { _ in }
 }
-
-

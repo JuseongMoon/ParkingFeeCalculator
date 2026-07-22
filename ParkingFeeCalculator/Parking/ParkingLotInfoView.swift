@@ -6,7 +6,7 @@
 //
 
 import SwiftUI
-import ParkingFeeCore
+// import ParkingFeeCore // 임시 제거
 
 struct ParkingLotInfoView: View {
     let parkingLotProfile: ParkingLotProfile
@@ -35,7 +35,7 @@ struct ParkingLotInfoView: View {
                         color: .blue
                     ) {
                         VStack(alignment: .leading, spacing: 12) {
-                            infoRow(title: "주차장명", value: parkingLotProfile.displayName)
+                            infoRow(title: "주차장명", value: parkingLotProfile.name)
                             infoRow(title: "주소", value: parkingLotProfile.address)
                         }
                     }

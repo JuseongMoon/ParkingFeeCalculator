@@ -7,7 +7,7 @@
 
 import Foundation
 import Combine
-import ParkingFeeCore
+// import ParkingFeeCore // 임시 제거
 
 @MainActor
 class TimerListViewModel: ObservableObject {

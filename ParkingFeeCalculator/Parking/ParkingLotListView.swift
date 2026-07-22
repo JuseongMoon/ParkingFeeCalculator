@@ -6,7 +6,7 @@
 //
 
 import SwiftUI
-import ParkingFeeCore
+// import ParkingFeeCore // 임시 제거
 
 struct ParkingLotListView: View {
     @StateObject private var viewModel = TimerListViewModel()

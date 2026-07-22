@@ -10,30 +10,62 @@ let package = Package(
         .macOS(.v13)
     ],
     products: [
-        // Products define the executables and libraries a package produces, making them visible to other packages.
+        // Clean Architecture Products - 계층별 분리
         .library(
-            name: "ParkingFeeCore",
-            targets: ["ParkingFeeCore"]),
+            name: "ParkingDomain",
+            targets: ["ParkingDomain"]),
+        .library(
+            name: "ParkingData",
+            targets: ["ParkingData"]),
+        .library(
+            name: "ParkingUI",
+            targets: ["ParkingUI"]),
         .library(
             name: "ParkingShared",
             targets: ["ParkingShared"]),
+
+        // Legacy Support - 점진적 마이그레이션을 위한 호환성 제공
+        .library(
+            name: "ParkingFeeCore",
+            targets: ["ParkingDomain", "ParkingData", "ParkingUI"]),
     ],
     dependencies: [
         // Dependencies declare other packages that this package depends on.
     ],
     targets: [
-        // Targets are the basic building blocks of a package, defining a module or a test suite.
-        // Targets can depend on other targets in this package and products from dependencies.
+        // MARK: - Domain Layer (가장 안쪽 레이어 - 다른 것에 의존하지 않음)
         .target(
-            name: "ParkingFeeCore",
+            name: "ParkingDomain",
             dependencies: [],
-            path: "Sources/ParkingFeeCore"),
+            path: "Sources/ParkingDomain"),
+
+        // MARK: - Data Layer (Domain과 Shared에 의존)
+        .target(
+            name: "ParkingData",
+            dependencies: ["ParkingDomain", "ParkingShared"],
+            path: "Sources/ParkingData"),
+
+        // MARK: - UI Layer (Domain, Data, Shared에 의존)
+        .target(
+            name: "ParkingUI",
+            dependencies: ["ParkingDomain", "ParkingData", "ParkingShared"],
+            path: "Sources/ParkingUI"),
+
+        // MARK: - Shared Layer (공통 유틸리티)
         .target(
             name: "ParkingShared",
             dependencies: [],
             path: "Sources/ParkingShared"),
+
+        // MARK: - Tests
         .testTarget(
-            name: "ParkingFeeCoreTests",
-            dependencies: ["ParkingFeeCore"]),
+            name: "ParkingDomainTests",
+            dependencies: ["ParkingDomain"]),
+        .testTarget(
+            name: "ParkingDataTests",
+            dependencies: ["ParkingData", "ParkingDomain"]),
+        .testTarget(
+            name: "ParkingUITests",
+            dependencies: ["ParkingUI", "ParkingDomain"]),
     ]
 )

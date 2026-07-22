@@ -7,143 +7,113 @@
 
 import WidgetKit
 import SwiftUI
-import ParkingFeeCore
+
+// 위젯 전용 데이터 구조
+struct SharedParkingData: Codable {
+    let isParkingActive: Bool
+    let currentFee: Int
+    let parkingStartTime: Date
+    let parkingLotName: String
+    let discountInfo: String?
+
+    init(isParkingActive: Bool = false, currentFee: Int = 0, parkingStartTime: Date = Date(), parkingLotName: String = "", discountInfo: String? = nil) {
+        self.isParkingActive = isParkingActive
+        self.currentFee = currentFee
+        self.parkingStartTime = parkingStartTime
+        self.parkingLotName = parkingLotName
+        self.discountInfo = discountInfo
+    }
+}
 
 struct ParkingWidgetEntry: TimelineEntry {
     let date: Date
-    let session: SharedParkingSession?
-    let currentFee: Int
-    let nextChangeTime: Date?
+    let data: SharedParkingData
 }
 
 struct ParkingWidgetProvider: TimelineProvider {
+    private let userDefaults = UserDefaults(suiteName: "group.com.ScienceFiction.ParkingFeeCalculator")
+
     func placeholder(in context: Context) -> ParkingWidgetEntry {
         ParkingWidgetEntry(
             date: Date(),
-            session: nil,
-            currentFee: 0,
-            nextChangeTime: nil
+            data: SharedParkingData()
         )
     }
 
     func getSnapshot(in context: Context, completion: @escaping (ParkingWidgetEntry) -> ()) {
-        let session = ParkingSessionManager.shared.currentSession()
-        let currentFee = session?.currentFee ?? 0
-        let nextChange = session.flatMap { 
-            FeeCalculationUtilities.nextFeeChangeTime(for: $0)
-        }
-        
         let entry = ParkingWidgetEntry(
             date: Date(),
-            session: session,
-            currentFee: currentFee,
-            nextChangeTime: nextChange
+            data: loadParkingData()
         )
         completion(entry)
     }
 
-    func getTimeline(in context: Context, completion: @escaping (Timeline<Entry>) -> ()) {
-        guard let session = ParkingSessionManager.shared.currentSession() else {
-            // 세션이 없으면 빈 엔트리
-            let entry = ParkingWidgetEntry(
-                date: Date(),
-                session: nil,
-                currentFee: 0,
-                nextChangeTime: nil
-            )
-            let timeline = Timeline(entries: [entry], policy: .after(Date().addingTimeInterval(300))) // 5분 후 재확인
-            completion(timeline)
-            return
-        }
-        
-        var entries: [ParkingWidgetEntry] = []
-        let now = Date()
-        
-        // 현재 엔트리
-        let currentFee = session.currentFee
-        entries.append(ParkingWidgetEntry(
-            date: now,
-            session: session,
-            currentFee: currentFee,
-            nextChangeTime: FeeCalculationUtilities.nextFeeChangeTime(for: session, after: now)
-        ))
-        
-        // 향후 6시간 동안의 변경점들 (최대 20개)
-        let changePoints = FeeCalculationUtilities.getAllSignificantChangePoints(
-            for: session,
-            maxDuration: 21600 // 6시간
-        ).prefix(20)
-        
-        for changeTime in changePoints {
-            if changeTime > now {
-                let fee = FeeCalculationService.shared.calculateFee(
-                    for: session,
-                    at: changeTime
-                ).finalFee
-                
-                let nextChange = FeeCalculationUtilities.nextFeeChangeTime(
-                    for: session,
-                    after: changeTime.addingTimeInterval(1)
-                )
-                
-                entries.append(ParkingWidgetEntry(
-                    date: changeTime,
-                    session: session,
-                    currentFee: fee,
-                    nextChangeTime: nextChange
-                ))
-            }
-        }
-        
-        // 타임라인 정책: 마지막 엔트리 시간 또는 6시간 후
-        let lastDate = entries.last?.date ?? now
-        let reloadDate = min(lastDate.addingTimeInterval(60), now.addingTimeInterval(21600))
-        
-        let timeline = Timeline(entries: entries, policy: .after(reloadDate))
+    func getTimeline(in context: Context, completion: @escaping (Timeline<ParkingWidgetEntry>) -> ()) {
+        let currentData = loadParkingData()
+
+        let entry = ParkingWidgetEntry(
+            date: Date(),
+            data: currentData
+        )
+
+        // 주차 상태에 따른 업데이트 빈도 조절
+        let updateInterval: Int = currentData.isParkingActive ? 1 : 5 // 주차 중: 1분, 대기 중: 5분
+        let nextUpdateDate = Calendar.current.date(byAdding: .minute, value: updateInterval, to: Date()) ?? Date()
+        let timeline = Timeline<ParkingWidgetEntry>(entries: [entry], policy: .after(nextUpdateDate))
+
         completion(timeline)
+    }
+
+    // 간단한 UserDefaults 기반 데이터 로딩
+    private func loadParkingData() -> SharedParkingData {
+        guard let data = userDefaults?.data(forKey: "sharedParkingData"),
+              let sharedData = try? JSONDecoder().decode(SharedParkingData.self, from: data) else {
+            return SharedParkingData()
+        }
+        return sharedData
     }
 }
 
 struct ParkingFeeCalculatorWidgetEntryView : View {
     @Environment(\.widgetFamily) var widgetFamily
     var entry: ParkingWidgetProvider.Entry
-    
+
     var body: some View {
-        if let session = entry.session {
+        if entry.data.isParkingActive {
             VStack(alignment: .leading, spacing: 8) {
                 // 주차장 이름
                 HStack {
                     Image(systemName: "parkingsign.circle.fill")
                         .font(.system(size: 16, weight: .semibold))
                         .foregroundColor(.blue)
-                    Text(session.parkingLot.name)
+                    Text(entry.data.parkingLotName)
                         .font(.system(size: 14, weight: .semibold))
                         .lineLimit(1)
                 }
-                
+
                 // 경과 시간 (자동 갱신)
                 HStack {
                     Text("경과")
                         .font(.system(size: 12))
                         .foregroundColor(.secondary)
-                    Text(session.startTime, style: .timer)
+                    Text(entry.data.parkingStartTime, style: .timer)
                         .font(.system(size: 14, weight: .medium, design: .rounded))
                         .foregroundColor(.primary)
                 }
-                
+
                 // 현재 요금
                 HStack {
                     Text("요금")
                         .font(.system(size: 12))
                         .foregroundColor(.secondary)
                     Spacer()
-                    Text("\(entry.currentFee)원")
+                    Text("\(entry.data.currentFee)원")
                         .font(.system(size: 16, weight: .bold, design: .rounded))
                         .foregroundColor(.blue)
                 }
-                
+
                 // 할인 정보 (있을 경우)
-                if let discountInfo = session.discountInfo {
+                if let discountInfo = entry.data.discountInfo {
                     Text(discountInfo)
                         .font(.system(size: 10))
                         .foregroundColor(.green)
@@ -189,5 +159,14 @@ struct ParkingFeeCalculatorWidget: Widget {
 #Preview(as: .systemSmall) {
     ParkingFeeCalculatorWidget()
 } timeline: {
-    ParkingWidgetEntry(date: .now, session: nil, currentFee: 0, nextChangeTime: nil)
+    ParkingWidgetEntry(
+        date: .now,
+        data: SharedParkingData(
+            isParkingActive: true,
+            currentFee: 2500,
+            parkingStartTime: Date().addingTimeInterval(-3600),
+            parkingLotName: "강남 지하주차장",
+            discountInfo: "경차 20% 할인"
+        )
+    )
 }

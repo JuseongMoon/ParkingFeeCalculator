@@ -7,6 +7,8 @@
 import SwiftUI
 import UserNotifications
 import os
+// // import ParkingFeeCore // 임시 제거  // 임시 제거 - Clean Architecture 패키지 연결 문제
+import ParkingShared
 // import Security   // ⬅️ Security 연결 후 주석 해제
 
 @main

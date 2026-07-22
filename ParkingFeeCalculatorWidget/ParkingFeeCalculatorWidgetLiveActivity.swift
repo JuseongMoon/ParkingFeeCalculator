@@ -8,7 +8,6 @@
 import ActivityKit
 import WidgetKit
 import SwiftUI
-import ParkingFeeCore
 import ParkingShared
 
 // MARK: - UI Components
