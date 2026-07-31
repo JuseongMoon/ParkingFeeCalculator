@@ -1,2 +1,37 @@
-/ParkingFeeCore/.build
-/ParkingFeeCore/.build
+# ── macOS ──────────────────────────────────────
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+
+# ── Xcode: 사용자별 상태 ────────────────────────
+# 열어둔 탭, 중단점, 스킴 선택 등 개인 작업 상태라 공유 대상이 아님
+xcuserdata/
+*.xcuserstate
+*.xcuserdatad/
+
+# ── Xcode: 빌드 산출물 ──────────────────────────
+DerivedData/
+build/
+*.moved-aside
+*.hmap
+*.ipa
+*.dSYM
+*.dSYM.zip
+
+# ── Swift Package Manager ──────────────────────
+# .build 는 재생성 가능한 빌드 캐시 (현재 233MB)
+.build/
+.swiftpm/
+
+# ── 의존성 관리자 ───────────────────────────────
+Pods/
+Carthage/Build/
+
+# ── 에디터 임시 파일 ────────────────────────────
+*.swp
+*.swo
+*~
+
+# TODO(human): 아래에 이 프로젝트 정책에 맞는 규칙을 추가하세요
