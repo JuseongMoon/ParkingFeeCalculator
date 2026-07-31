@@ -1,4 +1,0 @@
-module ParkingFeeCorePackageTests {
-    header "/Users/david/Development/Swift/myProjects/ParkingFeeCalculator/ParkingFeeCore/.build/arm64-apple-macosx/debug/ParkingFeeCorePackageTests.build/ParkingFeeCorePackageTests-Swift.h"
-    requires objc
-}
