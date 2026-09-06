@@ -3,7 +3,11 @@
 주차장마다 제각각인 요금 체계를 등록해두고, **지금 나가면 얼마인지**를
 잠금화면과 다이내믹 아일랜드에서 실시간으로 확인하는 iOS 앱입니다.
 
-- 플랫폼: iOS 16.0+ (SwiftUI)
+<img src="docs/screenshots/01-parking-list.png" width="30%"> <img src="docs/screenshots/02-parking-lot-detail.png" width="30%"> <img src="docs/screenshots/03-driver-profile.png" width="30%">
+
+<sub>주차장 목록 — 경과 시간·현재 요금·시간대별 예상 요금 · 주차장 정보 — 요금 규칙과 적용 가능한 할인 · 프로필 — 운전자·차량 조건에 따른 할인 자격</sub>
+
+- 플랫폼: iOS 18.5+ (SwiftUI)
 - 구성: 앱 + WidgetKit 확장 + Clean Architecture SPM 패키지 + AWS 서버리스 백엔드
 - 간소화 버전: [ParkingFeeCalculatorLight](https://github.com/JuseongMoon/ParkingFeeCalculatorLight)
 
@@ -25,12 +29,20 @@
 | 상한 | `maxFee` / `dailyMaxFee` |
 | 야간 요금 | `nightStartHour` ~ `nightEndHour` + `nightRateType` |
 | 시간대별 차등 | `pricingTiers: [TimeBasedPricingTier]` |
+| 운전자 할인 | `DriverDiscountRules` — 경/중증 장애인 · 국가유공자 · 모범납세자 · 다자녀 · 고령자 |
+| 차량 할인 | `VehicleDiscountRules` — 차량 크기(경차/일반/대형) · 연료(전기/수소/하이브리드) |
 
 야간 요금은 **정액(`flat`)과 할인율(`percentage`) 두 방식**을 모두 지원합니다.
 주차장마다 표기 방식이 달라 하나로 통일할 수 없었기 때문입니다.
 
 `useTimeBasedPricing`을 켜면 단순 "초과 N분당 M원" 대신
 `thresholdMinutes` 기준으로 구간별 단가가 바뀌는 계단식 요금을 적용합니다.
+
+할인은 요금표가 아니라 **사람과 차에 붙습니다.** 같은 주차장이라도 국가유공자와
+전기차 운전자가 내는 돈이 다르기 때문에, 주차장 프로필과 별개로 운전자·차량 프로필을 두고
+`DiscountType`(`.driver` / `.vehicleSize` / `.vehicleFuel`)별로 적용 내역을 남깁니다.
+계산 결과 `FeeCalculationResult`는 최종 금액만이 아니라 **어떤 할인이 얼마나 붙었는지**(`appliedDiscounts`)를
+함께 돌려줘서, 화면에 "국가유공자 (-80%)"처럼 근거를 표시할 수 있습니다.
 
 ## 기술적으로 다룬 것
 
@@ -68,6 +80,11 @@ ParkingFeeCore/Sources/
 `ParkingDomain`은 어떤 프레임워크에도 의존하지 않아, 요금 계산 규칙을
 UI나 저장소 없이 단독으로 테스트합니다. → [`ParkingFeeCore/Tests/`](ParkingFeeCore/Tests/)
 
+**패키지 쪽은 정리가 끝났지만 앱 레이어는 아직 이관 중입니다.** 앱 타깃에는 패키지로 옮겨야 할
+타입이 남아 있고(`Shared/BasicDataTypes.swift`), `Timer/TimerListViewModel.swift`처럼
+`import ParkingFeeCore`를 주석 처리한 채 저장 로직이 비어 있는 스텁도 있습니다.
+"Clean Architecture 적용"은 **패키지에 대한 서술이지 앱 전체에 대한 서술이 아닙니다.**
+
 **3. App Groups로 앱과 위젯이 같은 데이터를 본다**
 위젯 확장은 별도 프로세스라 앱의 메모리 상태를 볼 수 없습니다.
 App Group 컨테이너의 UserDefaults를 통해 주차장 프로필과 활성 세션을 공유하고,
@@ -95,7 +112,15 @@ cd ParkingFeeCalculator
 open ParkingFeeCalculator.xcodeproj
 ```
 
-앱과 요금 계산은 그대로 빌드됩니다. Live Activity는 실제 기기에서만 동작합니다.
+> **현재 상태 — 앱 타깃은 빌드되지 않습니다.**
+> 앱 레이어를 `ParkingFeeCore` 패키지로 이관하는 작업이 진행 중이고, 그 과도기 상태가 이 브랜치에 있습니다.
+> `VehicleSize`·`DisabilityLevel` 같은 타입이 앱(`Shared/BasicDataTypes.swift`)과 패키지 두 모듈에
+> 중복 정의돼 있어 `Setting/UserProfileView.swift`가 컴파일에 실패합니다.
+> 어느 정의를 정본으로 삼을지 정하는 것이 다음 작업입니다.
+>
+> **`ParkingFeeCore` 패키지는 단독으로 빌드·테스트됩니다** (`swift test`). 요금 계산·할인 로직은 여기 있습니다.
+
+Live Activity는 실제 기기에서만 동작합니다.
 
 푸시 백엔드까지 돌리려면 Apple Developer 계정의 APNs 인증 키(`.p8`)와
 Team ID / Key ID가 필요합니다. 설정 절차는 [`AWS-Lambda/apns-setup.md`](AWS-Lambda/apns-setup.md)에

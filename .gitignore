@@ -34,4 +34,8 @@ Carthage/Build/
 *.swo
 *~
 
-# TODO(human): 아래에 이 프로젝트 정책에 맞는 규칙을 추가하세요
+# ── 시크릿 ──────────────────────────────────────
+# 값은 Secrets.xcconfig 에만 두고, 저장소에는 .example 만 올린다
+**/Secrets.xcconfig
+*.p8
+*.p12
