@@ -112,13 +112,12 @@ cd ParkingFeeCalculator
 open ParkingFeeCalculator.xcodeproj
 ```
 
-> **현재 상태 — 앱 타깃은 빌드되지 않습니다.**
-> 앱 레이어를 `ParkingFeeCore` 패키지로 이관하는 작업이 진행 중이고, 그 과도기 상태가 이 브랜치에 있습니다.
-> `VehicleSize`·`DisabilityLevel` 같은 타입이 앱(`Shared/BasicDataTypes.swift`)과 패키지 두 모듈에
-> 중복 정의돼 있어 `Setting/UserProfileView.swift`가 컴파일에 실패합니다.
-> 어느 정의를 정본으로 삼을지 정하는 것이 다음 작업입니다.
->
-> **`ParkingFeeCore` 패키지는 단독으로 빌드·테스트됩니다** (`swift test`). 요금 계산·할인 로직은 여기 있습니다.
+> **모델 정본은 앱의 `Shared/BasicDataTypes.swift`입니다.** 앱 타깃은 `ParkingShared`만 import 하고,
+> 화면이 쓰는 `DriverProfile`·`VehicleProfile`·`ParkingLotProfile`은 전부 이 파일의 정의입니다.
+> `ParkingFeeCore` 패키지는 요금 계산·할인 로직을 Clean Architecture로 다시 쓰는 별도 트랙이며
+> 단독으로 빌드·테스트됩니다(`cd ParkingFeeCore && swift test`). 앱 화면을 패키지 모델로 옮기는 이관은
+> 아직 진행 전입니다 — 패키지 `ParkingDomain`은 `Set<SpecialCondition>`·`fuelType` 기반의 다른 모델이라
+> 소비 화면을 함께 다시 써야 하는 작업입니다.
 
 Live Activity는 실제 기기에서만 동작합니다.
 

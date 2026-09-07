@@ -67,6 +67,9 @@ enum DisabilityLevel: String, CaseIterable, Codable {
     case none = "해당없음"
     case mild = "경증"
     case severe = "중증"
+
+    /// rawValue 자체가 화면 표시용 한국어 라벨이다.
+    var displayName: String { rawValue }
 }
 
 // MARK: - 차량 크기
@@ -74,6 +77,9 @@ enum VehicleSize: String, CaseIterable, Codable {
     case light = "경차"
     case normal = "일반"
     case large = "대형"
+
+    /// rawValue 자체가 화면 표시용 한국어 라벨이다.
+    var displayName: String { rawValue }
 }
 
 // MARK: - 시간대별 요금 계층
@@ -120,6 +126,11 @@ struct ParkingLotProfile: Codable, Identifiable {
         self.specialConditionDiscounts = specialConditionDiscounts
         self.createdAt = createdAt
         self.updatedAt = updatedAt
+    }
+
+    /// 목록·상세 화면 표시용 이름. 이름이 비어 있으면 자리표시자를 보여준다.
+    var displayName: String {
+        name.isEmpty ? "미등록 주차장" : name
     }
 }
 
@@ -186,21 +197,38 @@ struct DriverProfile: Codable {
     var isDisabled: Bool = false
     var isSenior: Bool = false
     var hasLowIncome: Bool = false
-    var disabilityLevel: DisabilityLevel = .none
+    /// nil 이면 해당 없음. 프로필 화면이 `if let` 과 optional tag 로 다루므로 Optional 로 둔다.
+    var disabilityLevel: DisabilityLevel? = nil
+    // 감면 대상 조건 — SpecialConditionDiscounts 의 nationalMerit 등과 짝을 이룬다.
+    var isNationalMerit: Bool = false
+    var isMultiChild: Bool = false
+    var isExemplaryTaxpayer: Bool = false
+
+    /// 감면 조건이 하나라도 켜져 있는가. 프로필 화면의 조건 요약 표시에 쓴다.
+    var hasAnySpecialCondition: Bool {
+        isDisabled || isSenior || hasLowIncome || isNationalMerit || isMultiChild || isExemplaryTaxpayer
+    }
 
     var displayName: String {
         var names: [String] = []
         if isDisabled { names.append("장애인") }
         if isSenior { names.append("경로우대") }
         if hasLowIncome { names.append("저소득층") }
+        if isNationalMerit { names.append("국가유공자") }
+        if isMultiChild { names.append("다자녀") }
+        if isExemplaryTaxpayer { names.append("모범납세자") }
         return names.isEmpty ? "일반" : names.joined(separator: ", ")
     }
 
-    init(isDisabled: Bool = false, isSenior: Bool = false, hasLowIncome: Bool = false, disabilityLevel: DisabilityLevel = .none) {
+    init(isDisabled: Bool = false, isSenior: Bool = false, hasLowIncome: Bool = false, disabilityLevel: DisabilityLevel? = nil,
+         isNationalMerit: Bool = false, isMultiChild: Bool = false, isExemplaryTaxpayer: Bool = false) {
         self.isDisabled = isDisabled
         self.isSenior = isSenior
         self.hasLowIncome = hasLowIncome
         self.disabilityLevel = disabilityLevel
+        self.isNationalMerit = isNationalMerit
+        self.isMultiChild = isMultiChild
+        self.isExemplaryTaxpayer = isExemplaryTaxpayer
     }
 
     var isProfileComplete: Bool {
@@ -210,17 +238,36 @@ struct DriverProfile: Codable {
 
 struct VehicleProfile: Codable {
     var isElectric: Bool = false
+    var isHydrogen: Bool = false
+    var isHybrid: Bool = false
     var isCompact: Bool = false
     var vehicleSize: VehicleSize = .normal
 
-    init(isElectric: Bool = false, isCompact: Bool = false, vehicleSize: VehicleSize = .normal) {
+    init(isElectric: Bool = false, isHydrogen: Bool = false, isHybrid: Bool = false,
+         isCompact: Bool = false, vehicleSize: VehicleSize = .normal) {
         self.isElectric = isElectric
+        self.isHydrogen = isHydrogen
+        self.isHybrid = isHybrid
         self.isCompact = isCompact
         self.vehicleSize = vehicleSize
     }
 
+    /// 친환경차 감면 대상 여부 — 전기·수소·하이브리드 중 하나면 true.
+    var isEcoFriendly: Bool { isElectric || isHydrogen || isHybrid }
+
     var isProfileComplete: Bool {
         return true // 기본적으로 완료된 것으로 간주
+    }
+
+    /// 프로필 화면 요약 라벨. DriverProfile.displayName 과 같은 방식으로 속성을 나열한다.
+    /// vehicleSize 가 .light 이면 isCompact 라벨이 "경차"와 겹치므로 한 번만 표시한다.
+    var displayName: String {
+        var names: [String] = [vehicleSize.displayName]
+        if isElectric { names.append("전기차") }
+        if isHydrogen { names.append("수소차") }
+        if isHybrid { names.append("하이브리드") }
+        if isCompact && vehicleSize != .light { names.append("경차") }
+        return names.joined(separator: ", ")
     }
 }
 

@@ -57,7 +57,9 @@ struct ParkingLotListView: View {
                         
                         // 주차장 리스트
                         Section {
-                            ForEach(viewModel.parkingLots) { parkingLot in
+                            // 클로저 파라미터 타입을 명시한다. 존재하지 않는 멤버를 참조하면 컴파일러가
+                            // "멤버 없음" 대신 type-check 시간 초과를 내며 원인을 가리므로, 타입을 고정해 진단을 명확히 한다.
+                            ForEach(viewModel.parkingLots) { (parkingLot: ParkingLotProfile) in
                                 NavigationLink(destination: ParkingLotInfoView(
                                     parkingLotProfile: parkingLot,
                                     isParkingActive: $isParkingActive,

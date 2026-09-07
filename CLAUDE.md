@@ -15,10 +15,12 @@ ParkingFeeCalculator is an iOS SwiftUI application for calculating parking fees 
 - **Data Storage**: UserDefaults with App Groups
 - **Package Manager**: Swift Package Manager — local package `ParkingFeeCore/` (ParkingDomain · ParkingData · ParkingFeeCore · ParkingUI · ParkingShared)
 
-> **The app target does not currently compile.** `VehicleSize` / `DisabilityLevel` are defined both in
-> `ParkingFeeCalculator/Shared/BasicDataTypes.swift` and in the package, and `Setting/UserProfileView.swift`
-> resolves to the app-local copies, which lack `displayName`. Deciding which definition is canonical is the
-> next task. The `ParkingFeeCore` package itself builds and tests green.
+> **모델의 정본은 앱 로컬 `Shared/BasicDataTypes.swift`다.** 앱 타깃은 `ParkingShared`만 import 하며,
+> `Setting/UserProfileView.swift`·`Parking/ParkingLotListView.swift` 가 쓰는 `displayName`·`isNationalMerit`·
+> `isHydrogen`·`isEcoFriendly`·`hasAnySpecialCondition` 등은 전부 이 파일의 정의다.
+> `ParkingFeeCore/Sources/ParkingFeeCore/` 는 `Package.swift` 에 target 이 없는 **고아 디렉터리**(컴파일되지 않음)이고,
+> `ParkingDomain` 은 `Set<SpecialCondition>`·`fuelType` 기반의 다른 모델이다. 뷰를 패키지 모델로 옮기려면
+> 소비 파일 5개를 다시 써야 하므로 별도 작업이다 — 빌드 복구 목적으로 뷰를 패키지에 맞추지 말 것.
 
 ## Development Commands
 
