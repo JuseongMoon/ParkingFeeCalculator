@@ -5,7 +5,7 @@ frameworkVersion: '3'
 
 provider:
   name: aws
-  runtime: python3.9
+  runtime: python3.13
   region: ap-northeast-2  # 서울 리전
   timeout: 30
   memorySize: 256
