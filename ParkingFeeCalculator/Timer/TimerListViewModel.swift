@@ -45,9 +45,14 @@ class TimerListViewModel: ObservableObject {
     }
     
     // MARK: - Parking Lot Management
+    /// UserDefaults 에 JSON 으로 저장된 주차장 목록을 복원한다.
+    /// 저장된 것이 없거나 디코딩에 실패하면 빈 목록으로 시작한다(첫 실행 · 스키마 변경 시 안전).
     func loadParkingLots() {
-        // TODO: UserDefaults 또는 Core Data에서 로드
-        // 실제 앱에서는 빈 상태로 시작
+        guard let data = UserDefaults.standard.data(forKey: Self.parkingLotsKey),
+              let decoded = try? JSONDecoder().decode([ParkingLotProfile].self, from: data) else {
+            return
+        }
+        parkingLots = decoded
     }
     
     func addParkingLot(_ parkingLot: ParkingLotProfile) {
@@ -137,8 +142,16 @@ class TimerListViewModel: ObservableObject {
         // TODO: UserDefaults 또는 Core Data에 저장
     }
     
+    /// 주차장 목록 저장 키. 위젯은 이 키를 읽지 않으므로 App Group suite 가 아닌 standard 를 쓴다.
+    /// 위젯이 주차장 목록을 필요로 하게 되면 그때 App Group suite 로 옮긴다.
+    private static let parkingLotsKey = "parkingLots"
+
     private func saveParkingLots() {
-        // TODO: UserDefaults 또는 Core Data에 저장
+        guard let data = try? JSONEncoder().encode(parkingLots) else {
+            errorMessage = "주차장 목록을 저장하지 못했습니다."
+            return
+        }
+        UserDefaults.standard.set(data, forKey: Self.parkingLotsKey)
     }
     
     // MARK: - Preview Helper
